@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PO CSV Generator — invygo</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --bg2: #111118;
+  --bg3: #1a1a24;
+  --border: #2a2a3a;
+  --border2: #3a3a50;
+  --text: #e8e8f0;
+  --text2: #9090b0;
+  --text3: #5a5a78;
+  --accent: #6c63ff;
+  --accent2: #9d97ff;
+  --green: #00d4aa;
+  --green2: #00a882;
+  --red: #ff4d6d;
+  --yellow: #ffd60a;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans Arabic', sans-serif;
+  --radius: 8px;
+  --radius-lg: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(108,99,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108,99,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 1; }
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--accent2);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.header-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+}
+.header-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 1.5rem;
+  background: var(--bg2);
+  padding: 4px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+.tab {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  background: none;
+  color: var(--text2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  position: relative;
+}
+.tab:hover { color: var(--text); background: var(--bg3); }
+.tab.active {
+  background: var(--bg3);
+  color: var(--text);
+  border: 1px solid var(--border2);
+}
+.tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 2px;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Cards */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+}
+.card-title {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Grid */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+.g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; }
+
+/* Form fields */
+.field { display: flex; flex-direction: column; gap: 6px; }
+label {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--text3);
+  text-transform: uppercase;
+}
+input[type="text"], input[type="number"], select, textarea {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 13px;
+  padding: 9px 12px;
+  width: 100%;
+  transition: border-color 0.2s;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.15); }
+input[readonly] { opacity: 0.5; cursor: not-allowed; }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a5a78' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: left 10px center;
+  padding-left: 30px;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); transform: translateY(-1px); }
+.btn-ghost {
+  background: var(--bg3);
+  color: var(--text2);
+  border-color: var(--border);
+}
+.btn-ghost:hover { border-color: var(--border2); color: var(--text); }
+.btn-danger { background: rgba(255,77,109,0.1); color: var(--red); border-color: rgba(255,77,109,0.3); }
+.btn-danger:hover { background: rgba(255,77,109,0.2); }
+.btn-success { background: rgba(0,212,170,0.1); color: var(--green); border-color: rgba(0,212,170,0.3); width: 100%; padding: 14px; font-size: 14px; }
+.btn-success:hover { background: rgba(0,212,170,0.2); transform: translateY(-1px); }
+.btn-add-car {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  border: 1px dashed var(--border2);
+  color: var(--text3);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.btn-add-car:hover { border-color: var(--accent); color: var(--accent2); background: rgba(108,99,255,0.05); }
+.btn-sm {
+  padding: 5px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+
+/* Car block */
+.car-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.car-block:hover { border-color: var(--border2); }
+.car-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(108,99,255,0.05);
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.car-header-title {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--accent2);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.car-counter {
+  font-size: 11px;
+  background: rgba(108,99,255,0.2);
+  color: var(--accent2);
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.car-body { padding: 16px; }
+
+/* Delivery block */
+.delivery-block {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.delivery-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.delivery-badge {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(0,212,170,0.1);
+  color: var(--green);
+  border: 1px solid rgba(0,212,170,0.2);
+}
+
+/* Color row */
+.color-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.color-total {
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+.color-total.ok { background: rgba(0,212,170,0.1); color: var(--green); }
+.color-total.warn { background: rgba(255,214,10,0.1); color: var(--yellow); }
+.color-total.err { background: rgba(255,77,109,0.1); color: var(--red); }
+
+/* Output */
+.output-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text2);
+  max-height: 320px;
+  overflow-y: auto;
+  white-space: pre;
+  line-height: 1.7;
+  display: none;
+  margin-top: 12px;
+}
+.output-box::-webkit-scrollbar { width: 6px; }
+.output-box::-webkit-scrollbar-track { background: var(--bg2); }
+.output-box::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* Stats */
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px; }
+.stat-box {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px;
+  text-align: center;
+}
+.stat-num { font-family: var(--mono); font-size: 24px; color: var(--accent2); font-weight: 600; }
+.stat-label { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 1px; margin-top: 4px; }
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--green2);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 13px;
+  z-index: 999;
+  transition: transform 0.3s ease;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* Separator */
+.sep { height: 1px; background: var(--border); margin: 16px 0; }
+.divider-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 12px 0 10px;
+}
+.divider-label::before, .divider-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div>
+      <div class="header-title">PO CSV Generator</div>
+      <div class="header-sub">INVYGO — FLEET MANAGEMENT TOOL</div>
+    </div>
+    <div class="logo">PO // GEN</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('setup', this)">⚙ إعداد الـ PO</button>
+    <button class="tab" onclick="switchTab('cars', this)">🚗 العربيات والتسليم</button>
+    <button class="tab" onclick="switchTab('generate', this)">📄 توليد الملف</button>
+  </div>
+
+  <!-- TAB 1: Setup -->
+  <div id="tab-setup" class="tab-content active">
+    <div class="card">
+      <div class="card-title">بيانات الـ PO</div>
+      <div class="g3">
+        <div class="field"><label>رقم الـ PO</label><input type="text" id="po-num" value="117" placeholder="117"></div>
+        <div class="field"><label>Type</label><input type="text" id="po-type" value="LEASE_TO_OWN"></div>
+        <div class="field"><label>SKU Prefix</label><input type="text" id="sku-prefix" value="COM-STO-KSA-285-CON117"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">حقول ثابتة — لا تتغير</div>
+      <div class="g3">
+        <div class="field"><label>Condition</label><input type="text" value="NEW" readonly></div>
+        <div class="field"><label>Status Type</label><input type="text" value="COMMITTED" readonly></div>
+        <div class="field"><label>Mileage</label><input type="text" value="100" readonly></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">المدن والـ Locations</div>
+      <div class="g3">
+        <div class="field"><label>Riyadh</label><input type="text" id="loc-riyadh" value="Riyadh - Al Quds - Pickup"></div>
+        <div class="field"><label>Jeddah</label><input type="text" id="loc-jeddah" value="Jeddah - Ar Rabwah - Pickup"></div>
+        <div class="field"><label>Dammam</label><input type="text" id="loc-dammam" value="Dammam - Al Rawdah - Pickup"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Cars -->
+  <div id="tab-cars" class="tab-content">
+    <div id="cars-list"></div>
+    <button class="btn-add-car" onclick="addCar()">+ أضف موديل جديد</button>
+  </div>
+
+  <!-- TAB 3: Generate -->
+  <div id="tab-generate" class="tab-content">
+    <div class="card">
+      <div class="card-title">ملخص</div>
+      <div class="stats">
+        <div class="stat-box"><div class="stat-num" id="stat-models">0</div><div class="stat-label">موديل</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-deliveries">0</div><div class="stat-label">تسليم</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-total">0</div><div class="stat-label">عربية إجمالي</div></div>
+      </div>
+      <button class="btn btn-success" onclick="generateCSV()">⚡ Generate CSV</button>
+      <div id="output-box" class="output-box"></div>
+    </div>
+    <div class="card" id="copy-card" style="display:none">
+      <div class="card-title">تصدير الملف</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px;line-height:1.8">
+        اضغط <strong style="color:var(--text)">Copy CSV</strong> ثم افتح Notepad أو Excel والصق (Ctrl+V) واحفظ الملف باسم <code style="font-family:var(--mono);font-size:12px;color:var(--accent2)">.csv</code>
+      </p>
+      <div class="g2">
+        <button class="btn btn-ghost" onclick="copyCSV()" style="width:100%;padding:12px">📋 Copy CSV</button>
+        <button class="btn btn-ghost" onclick="copyHeaders()" style="width:100%;padding:12px">🔖 Copy Headers فقط</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let cars = [];
+let generatedCSV = '';
+
+const DATES = {
+  'jun10': { label: '10 Jun 2026', value: '6/10/2026', code: '10Jun' },
+  'jun28': { label: '28 Jun 2026', value: '6/28/2026', code: '28Jun' }
+};
+
+function showToast(msg, duration = 3000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'generate') updateStats();
+}
+
+function updateStats() {
+  let totalCars = 0, totalDel = 0;
+  for (const c of cars) {
+    totalDel += c.deliveries.length;
+    for (const d of c.deliveries) totalCars += d.count;
+  }
+  document.getElementById('stat-models').textContent = cars.length;
+  document.getElementById('stat-deliveries').textContent = totalDel;
+  document.getElementById('stat-total').textContent = totalCars;
+}
+
+function addCar() {
+  cars.push({
+    id: Date.now(),
+    make: '',
+    model: '',
+    year: '2026',
+    trim: '',
+    sku: '',
+    deliveries: [],
+    collapsed: false
+  });
+  renderCars();
+}
+
+function removeCar(id) {
+  if (!confirm('حذف هذا الموديل؟')) return;
+  cars = cars.filter(c => c.id !== id);
+  renderCars();
+}
+
+function toggleCar(id) {
+  const c = cars.find(c => c.id === id);
+  c.collapsed = !c.collapsed;
+  renderCars();
+}
+
+function addDelivery(id) {
+  cars.find(c => c.id === id).deliveries.push({ date: 'jun10', city: 'Riyadh', count: 10, colors: [] });
+  renderCars();
+}
+
+function removeDelivery(id, i) {
+  cars.find(c => c.id === id).deliveries.splice(i, 1);
+  renderCars();
+}
+
+function addColor(id, di) {
+  cars.find(c => c.id === id).deliveries[di].colors.push({ name: '', count: 1 });
+  renderCars();
+}
+
+function removeColor(id, di, ci) {
+  cars.find(c => c.id === id).deliveries[di].colors.splice(ci, 1);
+  renderCars();
+}
+
+function sf(id, f, v) { const c = cars.find(c => c.id === id); c[f] = v; refreshCarHeader(id); }
+function sd(id, i, f, v) { const d = cars.find(c => c.id === id).deliveries[i]; d[f] = f === 'count' ? parseInt(v) || 0 : v; refreshColorTotal(id, i); }
+function sc(id, di, ci, f, v) { const col = cars.find(c => c.id === id).deliveries[di].colors[ci]; col[f] = f === 'count' ? parseInt(v) || 0 : v; refreshColorTotal(id, di); }
+
+function refreshCarHeader(id) {
+  const c = cars.find(c => c.id === id);
+  const el = document.querySelector(`[data-car-header="${id}"]`);
+  if (el) el.textContent = `${c.make || '?'} ${c.model || '?'} ${c.year}`;
+}
+
+function refreshColorTotal(id, di) {
+  const d = cars.find(c => c.id === id).deliveries[di];
+  const totalColors = d.colors.reduce((s, c) => s + c.count, 0);
+  const diff = d.count - totalColors;
+  const el = document.getElementById(`color-total-${id}-${di}`);
+  if (!el) return;
+  if (!d.colors.length) { el.textContent = ''; el.className = 'color-total'; return; }
+  if (diff === 0) { el.textContent = '✓ الألوان مكتملة'; el.className = 'color-total ok'; }
+  else if (diff > 0) { el.textContent = `باقي ${diff} عربية بدون لون`; el.className = 'color-total warn'; }
+  else { el.textContent = `زيادة ${Math.abs(diff)} عربية`; el.className = 'color-total err'; }
+}
+
+function renderCars() {
+  const el = document.getElementById('cars-list');
+  if (!cars.length) {
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-family:var(--mono);font-size:13px">لا توجد موديلات — اضغط "+ أضف موديل جديد"</div>`;
+    return;
+  }
+  el.innerHTML = cars.map((car, ci) => `
+    <div class="car-block">
+      <div class="car-header" onclick="toggleCar(${car.id})">
+        <div class="car-header-title">
+          <span style="color:var(--text3);font-size:11px">#${ci+1}</span>
+          <span data-car-header="${car.id}">${car.make || '?'} ${car.model || '?'} ${car.year}</span>
+          <span class="car-counter">${car.deliveries.reduce((s,d)=>s+d.count,0)} عربية</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">${car.collapsed ? '▼' : '▲'}</span>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();removeCar(${car.id})">حذف</button>
+        </div>
+      </div>
+      ${car.collapsed ? '' : `
+      <div class="car-body">
+        <div class="g4" style="margin-bottom:12px">
+          <div class="field"><label>Make</label><input type="text" value="${car.make}" onchange="sf(${car.id},'make',this.value)" placeholder="Hyundai"></div>
+          <div class="field"><label>Model</label><input type="text" value="${car.model}" onchange="sf(${car.id},'model',this.value)" placeholder="Accent"></div>
+          <div class="field"><label>Year</label><input type="text" value="${car.year}" onchange="sf(${car.id},'year',this.value)" placeholder="2026"></div>
+          <div class="field"><label>Trim</label><input type="text" value="${car.trim}" onchange="sf(${car.id},'trim',this.value)" placeholder="Fleet"></div>
+        </div>
+        <div class="g2" style="margin-bottom:16px">
+          <div class="field"><label>SKU</label><input type="text" value="${car.sku}" onchange="sf(${car.id},'sku',this.value)" placeholder="COM-STO-KSA-285-CON117-B35-M01-Y26-T01"></div>
+        </div>
+        <div class="divider-label">التسليمات</div>
+        ${car.deliveries.map((d, di) => `
+          <div class="delivery-block">
+            <div class="delivery-header">
+              <span class="delivery-badge">${DATES[d.date]?.label || d.date} — ${d.city}</span>
+              <span style="font-family:var(--mono);font-size:11px;color:var(--text3)">${d.count} عربية</span>
+              <button class="btn btn-danger btn-sm" onclick="removeDelivery(${car.id},${di})" style="margin-right:auto">حذف</button>
+            </div>
+            <div class="g3" style="margin-bottom:10px">
+              <div class="field">
+                <label>تاريخ التسليم</label>
+                <select onchange="sd(${car.id},${di},'date',this.value)">
+                  <option value="jun10" ${d.date==='jun10'?'selected':''}>10 Jun 2026</option>
+                  <option value="jun28" ${d.date==='jun28'?'selected':''}>28 Jun 2026</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>المدينة</label>
+                <select onchange="sd(${car.id},${di},'city',this.value)">
+                  <option value="Riyadh" ${d.city==='Riyadh'?'selected':''}>Riyadh</option>
+                  <option value="Jeddah" ${d.city==='Jeddah'?'selected':''}>Jeddah</option>
+                  <option value="Dammam" ${d.city==='Dammam'?'selected':''}>Dammam</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>عدد العربيات</label>
+                <input type="number" min="1" value="${d.count}" onchange="sd(${car.id},${di},'count',this.value)">
+              </div>
+            </div>
+            <div style="font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;margin-bottom:8px;text-transform:uppercase">
+              الألوان
+              <button class="btn btn-ghost btn-sm" onclick="addColor(${car.id},${di})" style="margin-right:8px">+ لون</button>
+            </div>
+            ${d.colors.map((col, ci) => `
+              <div class="color-row">
+                <input type="text" value="${col.name}" onchange="sc(${car.id},${di},${ci},'name',this.value)" placeholder="اسم اللون (مثال: Titan Gray)">
+                <input type="number" min="1" value="${col.count}" onchange="sc(${car.id},${di},${ci},'count',this.value)" style="width:80px">
+                <button class="btn btn-danger btn-sm" onclick="removeColor(${car.id},${di},${ci})">×</button>
+              </div>
+            `).join('')}
+            <div id="color-total-${car.id}-${di}" class="color-total"></div>
+          </div>
+        `).join('')}
+        <button class="btn btn-ghost btn-sm" onclick="addDelivery(${car.id})" style="width:100%;margin-top:4px">+ إضافة تسليم</button>
+      </div>
+      `}
+    </div>
+  `).join('');
+
+  // refresh color totals
+  cars.forEach(car => car.deliveries.forEach((_, di) => refreshColorTotal(car.id, di)));
+}
+
+function getCode(make, model, year) {
+  const m = (make.trim()[0] || 'X').toUpperCase();
+  const mo = (model.trim()[0] || 'X').toUpperCase();
+  const y = year.toString().slice(-2);
+  return m + mo + y;
+}
+
+function getLocation(city) {
+  const map = {
+    'Riyadh': document.getElementById('loc-riyadh').value,
+    'Jeddah': document.getElementById('loc-jeddah').value,
+    'Dammam': document.getElementById('loc-dammam').value,
+  };
+  return map[city] || city;
+}
+
+function generateCSV() {
+  const poNum = document.getElementById('po-num').value.trim();
+  const type = document.getElementById('po-type').value.trim();
+  const skuPrefixDefault = document.getElementById('sku-prefix').value.trim();
+
+  if (!poNum) { showToast('⚠ أدخل رقم الـ PO أولاً'); return; }
+  if (!cars.length) { showToast('⚠ أضف موديل واحد على الأقل'); return; }
+
+  const header = 'Vin Number,Registration Number,SKU,Status Type,Make (Brand),Model,Model Year,Color,Trim,Mileage,Location,Condition,Type,Available From,Role,Day Advance,Period Type,PO number,Available Buffer Days';
+  const rows = [header];
+
+  for (const car of cars) {
+    if (!car.model) { showToast(`⚠ أدخل Model للعربية: ${car.make || '?'}`); return; }
+    const code = getCode(car.make, car.model, car.year);
+    const sku = car.sku || skuPrefixDefault;
+
+    // Global counter per model
+    let globalCounter = 0;
+
+    for (const del of car.deliveries) {
+      const dateInfo = DATES[del.date] || { code: del.date, value: del.date };
+      const location = getLocation(del.city);
+
+      // Build color list
+      let colorList = [];
+      if (del.colors.length) {
+        for (const c of del.colors) for (let i = 0; i < c.count; i++) colorList.push(c.name || 'Unknown');
+        while (colorList.length < del.count) colorList.push('Unknown');
+        colorList = colorList.slice(0, del.count);
+      } else {
+        for (let i = 0; i < del.count; i++) colorList.push('Unknown');
+      }
+
+      for (let i = 0; i < del.count; i++) {
+        globalCounter++;
+        const num2 = String(globalCounter).padStart(2, '0');
+        const num3 = String(globalCounter).padStart(3, '0');
+        const vinNum = `PO${poNum}-${dateInfo.code}-${code}-${num2}`;
+        const regNum = `${dateInfo.code}-${code}-${poNum}-${num3}`;
+        const color = colorList[i];
+        rows.push(`${vinNum},${regNum},${sku},COMMITTED,${car.make},${car.model},${car.year},${color},${car.trim},100,${location},NEW,${type},${dateInfo.value},,,,${poNum},`);
+      }
+    }
+  }
+
+  generatedCSV = rows.join('\n');
+
+  const preview = rows.slice(0, 8).join('\n') + (rows.length > 8 ? `\n\n... و ${rows.length - 8} صف إضافي` : '');
+  const outBox = document.getElementById('output-box');
+  outBox.textContent = preview;
+  outBox.style.display = 'block';
+
+  document.getElementById('copy-card').style.display = 'block';
+  updateStats();
+  showToast(`✓ تم توليد ${rows.length - 1} صف بنجاح`);
+}
+
+function copyCSV() {
+  if (!generatedCSV) { showToast('⚠ اضغط Generate أولاً'); return; }
+  navigator.clipboard.writeText(generatedCSV)
+    .then(() => showToast('✓ تم النسخ! افتح Notepad والصق واحفظ كـ .csv'))
+    .catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = generatedCSV;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('✓ تم النسخ! افتح Notepad والصق واحفظ كـ .csv');
+    });
+}
+
+function copyHeaders() {
+  const h = 'Vin Number,Registration Number,SKU,Status Type,Make (Brand),Model,Model Year,Color,Trim,Mileage,Location,Condition,Type,Available From,Role,Day Advance,Period Type,PO number,Available Buffer Days';
+  navigator.clipboard.writeText(h).then(() => showToast('✓ تم نسخ الـ Headers'));
+}
+
+// Init
+renderCars();
+</script>
+</body>
+</html>
