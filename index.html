@@ -105,6 +105,8 @@ select {
 .delivery-badge { font-family: var(--mono); font-size: 10px; padding: 3px 8px; border-radius: 20px; background: rgba(0,212,170,0.1); color: var(--green); border: 1px solid rgba(0,212,170,0.2); }
 
 .color-row { display: grid; grid-template-columns: 1fr 80px 32px; gap: 8px; align-items: center; margin-bottom: 6px; }
+input[list] { cursor: pointer; }
+input[list]::-webkit-calendar-picker-indicator { opacity: 0.4; cursor: pointer; }
 .color-status { font-family: var(--mono); font-size: 11px; padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: inline-block; }
 .cs-ok { background: rgba(0,212,170,0.1); color: var(--green); }
 .cs-warn { background: rgba(255,214,10,0.1); color: var(--yellow); }
@@ -112,6 +114,18 @@ select {
 
 .divider { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; margin: 14px 0 10px; }
 .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.import-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 0; overflow: hidden; margin-bottom: 14px; }
+.import-box textarea { background: transparent; border: none; border-radius: 0; color: var(--text2); font-family: var(--mono); font-size: 12px; padding: 12px; width: 100%; height: 90px; resize: vertical; line-height: 1.6; outline: none; }
+.import-box textarea:focus { color: var(--text); }
+.import-box textarea::placeholder { color: var(--text3); }
+.import-bar { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg3); border-top: 1px solid var(--border); }
+.import-bar span { font-family: var(--mono); font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.btn-parse { background: rgba(108,99,255,0.15); color: var(--accent2); border: 1px solid rgba(108,99,255,0.3); border-radius: 6px; padding: 5px 14px; font-family: var(--mono); font-size: 12px; cursor: pointer; transition: all 0.2s; }
+.btn-parse:hover { background: rgba(108,99,255,0.25); }
+.parse-result { font-family: var(--mono); font-size: 11px; margin-top: 6px; padding: 8px 10px; border-radius: 6px; display: none; }
+.parse-result.ok { background: rgba(0,212,170,0.08); color: var(--green); border: 1px solid rgba(0,212,170,0.2); }
+.parse-result.warn { background: rgba(255,214,10,0.08); color: var(--yellow); border: 1px solid rgba(255,214,10,0.2); }
 
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
 .stat-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: center; }
@@ -243,6 +257,9 @@ select {
   </div>
 
 </div>
+<!-- Colors datalist -->
+<datalist id="colors-list"></datalist>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -250,6 +267,21 @@ let dates = [];
 let locations = [];
 let cars = [];
 let generatedCSV = '';
+
+// ===== COLORS =====
+let colorOptions = ['White','Gray','Silver','Black','Blue','Green','Beige','Red'];
+
+function updateColorsDatalist() {
+  const dl = document.getElementById('colors-list');
+  dl.innerHTML = colorOptions.map(c => `<option value="${c}">`).join('');
+}
+
+function saveCustomColor(val) {
+  if(val && !colorOptions.includes(val)) {
+    colorOptions.push(val);
+    updateColorsDatalist();
+  }
+}
 
 // ===== TOAST =====
 function showToast(msg, type='', duration=3000) {
@@ -340,7 +372,7 @@ function renderLocations() {
 
 // ===== CARS =====
 function addCar() {
-  cars.push({ id: Date.now(), make:'', model:'', year:'2026', trim:'', sku:'', deliveries:[], collapsed:false });
+  cars.push({ id: Date.now(), make:'', model:'', year:'2026', trim:'', sku:'', deliveries:[], collapsed:false, importText:'', parseMsg:'' });
   renderCars();
 }
 function removeCar(id) {
@@ -401,6 +433,7 @@ function removeColor(carId, delId, colId) {
 function scCol(carId, delId, colId, f, v) {
   const col = cars.find(c=>c.id===carId).deliveries.find(d=>d.id===delId).colors.find(c=>c.id===colId);
   col[f] = f==='count' ? parseInt(v)||0 : v;
+  if(f==='name') saveCustomColor(v);
   refreshColorTotal(carId, delId);
 }
 
@@ -415,6 +448,124 @@ function refreshColorTotal(carId, delId) {
   if(diff===0) { el.textContent='✓ Colors complete'; el.className='color-status cs-ok'; }
   else if(diff>0) { el.textContent=`${diff} cars without color`; el.className='color-status cs-warn'; }
   else { el.textContent=`${Math.abs(diff)} extra colors`; el.className='color-status cs-err'; }
+}
+
+// ===== QUICK IMPORT PARSER =====
+function parseDeliveries(carId) {
+  const car = cars.find(c=>c.id===carId);
+  const text = car.importText || '';
+  if(!text.trim()) { showToast('⚠ Paste delivery text first', 'error'); return; }
+
+  const MONTHS = { january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,
+    jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12 };
+
+  // Extract colors section first
+  let colorsMap = {};
+  const colorSectionMatch = text.match(/car colou?rs?[:\s]+(.+)/i);
+  if(colorSectionMatch) {
+    const colorText = colorSectionMatch[1];
+    const colorParts = colorText.split(',');
+    colorParts.forEach(part => {
+      part = part.trim().replace(/\.$/,'');
+      const m = part.match(/^(\d+)\s+(.+)$/);
+      if(m) { colorsMap[m[2].trim()] = parseInt(m[1]); }
+    });
+  }
+
+  // Extract delivery segments: "X cars in City on Month Nth"
+  const deliveryRegex = /(\d+)\s+cars?\s+in\s+([A-Za-z]+)\s+on\s+([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?/gi;
+  const newDeliveries = [];
+  const missingDates = [];
+  const missingCities = [];
+
+  let match;
+  while((match = deliveryRegex.exec(text)) !== null) {
+    const count = parseInt(match[1]);
+    const city = match[2];
+    const monthName = match[3].toLowerCase();
+    const day = parseInt(match[4]);
+    const monthNum = MONTHS[monthName];
+
+    if(!monthNum) continue;
+
+    // Build date strings
+    const year = new Date().getFullYear();
+    const csvDate = `${monthNum}/${day}/${year}`;
+    const monthShort = match[3].substring(0,3);
+    const dateCode = `${day}${monthShort}`;
+
+    // Find or flag date
+    let dateObj = dates.find(d => d.val === csvDate);
+    if(!dateObj) missingDates.push({ csvDate, dateCode });
+
+    // Find or flag city
+    const locObj = locations.find(l => l.city.toLowerCase() === city.toLowerCase());
+    if(!locObj) missingCities.push(city);
+
+    newDeliveries.push({ count, city, csvDate, dateCode });
+  }
+
+  if(!newDeliveries.length) {
+    showToast('⚠ Could not parse any deliveries — check the text format', 'error');
+    return;
+  }
+
+  // Auto-add missing dates
+  missingDates.forEach(({ csvDate, dateCode }) => {
+    if(!dates.find(d=>d.val===csvDate)) {
+      dates.push({ id: Date.now() + Math.random(), val: csvDate, code: dateCode });
+    }
+  });
+  renderDates();
+
+  // Auto-add missing cities (without location string — user fills it)
+  missingCities.forEach(city => {
+    if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) {
+      locations.push({ id: Date.now() + Math.random(), city, loc: '' });
+    }
+  });
+  renderLocations();
+
+  // Build deliveries with colors spread across all deliveries proportionally
+  const totalCarsInDeliveries = newDeliveries.reduce((s,d)=>s+d.count,0);
+  const colorEntries = Object.entries(colorsMap); // [[colorName, count], ...]
+
+  car.deliveries = newDeliveries.map(del => {
+    const dateObj = dates.find(d=>d.val===del.csvDate);
+    const locObj = locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
+
+    // Distribute colors proportionally per delivery
+    let deliveryColors = [];
+    if(colorEntries.length && totalCarsInDeliveries > 0) {
+      let remaining = del.count;
+      colorEntries.forEach(([name, totalCount], idx) => {
+        const proportion = Math.round((del.count / totalCarsInDeliveries) * totalCount);
+        const actual = (idx === colorEntries.length - 1) ? remaining : Math.min(proportion, remaining);
+        if(actual > 0) deliveryColors.push({ id: Date.now() + Math.random(), name, count: actual });
+        remaining -= actual;
+      });
+    }
+
+    return {
+      id: Date.now() + Math.random(),
+      dateId: dateObj ? dateObj.id : null,
+      city: locObj ? locObj.city : del.city,
+      count: del.count,
+      colors: deliveryColors
+    };
+  });
+
+  // Build parse result message
+  const msgs = [];
+  msgs.push(`✓ Parsed ${newDeliveries.length} deliveries, ${totalCarsInDeliveries} cars total`);
+  if(colorEntries.length) msgs.push(`✓ ${colorEntries.length} colors distributed`);
+  if(missingDates.length) msgs.push(`⚠ Auto-added ${missingDates.length} new date(s) — check PO Setup`);
+  if(missingCities.length) msgs.push(`⚠ Auto-added cities: ${missingCities.join(', ')} — add Location strings in PO Setup`);
+
+  car.parseMsg = { text: msgs.join(' | '), type: missingDates.length || missingCities.length ? 'warn' : 'ok' };
+  car.collapsed = false;
+  renderCars();
+  showToast(`✓ Parsed ${newDeliveries.length} deliveries`, 'success');
 }
 
 function getDateOptions(selectedId) {
@@ -459,6 +610,17 @@ function renderCars() {
           <label>SKU</label>
           <input type="text" value="${car.sku}" onchange="sfCar(${car.id},'sku',this.value)" placeholder="e.g. COM-STO-KSA-285-CON117-B35-M01-Y26-T01">
         </div>
+
+        <div class="divider">Quick Import from PO</div>
+        <div class="import-box">
+          <textarea placeholder="Paste delivery text from PO PDF here, e.g:&#10;7 cars in Riyadh on July 20th. 6 cars in Jeddah on July 20th. Car Colors: 10 Black, 5 Night Blue, 5 Universal White." onchange="sfCar(${car.id},'importText',this.value)">${car.importText||''}</textarea>
+          <div class="import-bar">
+            <span>Paste text → Parse → Edit if needed</span>
+            <button class="btn-parse" onclick="parseDeliveries(${car.id})">⚡ Parse</button>
+          </div>
+        </div>
+        ${car.parseMsg ? `<div class="parse-result ${car.parseMsg.type}" style="display:block">${car.parseMsg.text}</div>` : ''}
+
         <div class="divider">Deliveries</div>
         ${car.deliveries.length === 0 ? '<div class="empty-hint">No deliveries added yet.</div>' : ''}
         ${car.deliveries.map(d => `
@@ -489,7 +651,7 @@ function renderCars() {
             </div>
             ${d.colors.map(col => `
               <div class="color-row">
-                <input type="text" value="${col.name}" onchange="scCol(${car.id},${d.id},${col.id},'name',this.value)" placeholder="Color name (e.g. Titan Gray)">
+                <input type="text" list="colors-list" value="${col.name}" onchange="scCol(${car.id},${d.id},${col.id},'name',this.value)" placeholder="Type or select color...">
                 <input type="number" min="1" value="${col.count}" onchange="scCol(${car.id},${d.id},${col.id},'count',this.value)">
                 <button class="btn btn-danger btn-sm" onclick="removeColor(${car.id},${d.id},${col.id})" style="width:32px;height:36px;padding:0">×</button>
               </div>
@@ -599,6 +761,7 @@ function copyHeaders() {
 }
 
 // Start empty
+updateColorsDatalist();
 renderDates();
 renderLocations();
 renderCars();
