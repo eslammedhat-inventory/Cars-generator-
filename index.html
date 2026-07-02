@@ -461,10 +461,16 @@ function renderCars(){
           <div class="field"><label>Trim</label><input type="text" value="${car.trim}" onchange="sfCar(${car.id},'trim',this.value)" placeholder="Smart"></div>
         </div>
         <div class="field" style="margin-bottom:14px"><label>SKU</label><input type="text" value="${car.sku}" onchange="sfCar(${car.id},'sku',this.value)" placeholder="e.g. COM-STO-KSA-285-CON117-B35-M01-Y26-T01"></div>
-        <div class="divider">Quick Import from PO</div>
+        <div class="divider">Quick Import</div>
         <div class="import-box">
-          <textarea placeholder="Paste delivery text from PO PDF here, e.g:&#10;7 cars in Riyadh on July 20th. 6 cars in Jeddah on July 20th. Car Colors: 10 Black, 5 Night Blue, 5 Red Flame, 5 Universal White." onchange="sfCar(${car.id},'importText',this.value)">${car.importText||''}</textarea>
-          <div class="import-bar"><span>Paste text → Parse → Edit if needed</span><button class="btn-parse" onclick="parseDeliveries(${car.id})">⚡ Parse</button></div>
+          <textarea placeholder="Paste from PO PDF:&#10;7 cars in Riyadh on July 20th. Car Colors: 10 Black, 5 Night Blue, 5 Universal White.&#10;&#10;— OR — paste from Slack:&#10;Riyadh -> 20 cars -> 18 Gray, 2 Atlas White&#10;Jeddah -> 20 cars -> 18 Gray, 2 Atlas White" onchange="sfCar(${car.id},'importText',this.value)">${car.importText||''}</textarea>
+          <div class="import-bar">
+            <span>Supports PO PDF format &amp; Slack format</span>
+            <div style="display:flex;gap:6px">
+              <button class="btn-parse" onclick="parseSlack(${car.id})">⚡ Slack</button>
+              <button class="btn-parse" onclick="parseDeliveries(${car.id})">⚡ PO PDF</button>
+            </div>
+          </div>
         </div>
         ${car.parseMsg?`<div class="parse-result ${car.parseMsg.type}">${car.parseMsg.text}</div>`:''}
         <div class="divider">Deliveries</div>
@@ -497,19 +503,107 @@ function renderCars(){
   cars.forEach(car=>car.deliveries.forEach(d=>refreshColorTotal(car.id,d.id)));
 }
 
-// ===== QUICK IMPORT PARSER =====
+// ===== SLACK FORMAT PARSER =====
+// Format: "City -> N cars -> X Color1, Y Color2"
+// Can also have date headers like "June 10th delivery:" before city lines
+function parseSlack(carId){
+  const car=cars.find(c=>c.id===carId);
+  const text=car.importText||'';
+  if(!text.trim()){showToast('⚠ Paste Slack text first','error');return;}
+
+  const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+
+  const newDeliveries=[];
+  const missingDates=[];
+  const missingCities=[];
+
+  // Track current date context
+  let currentDateCsv=null;
+  let currentDateCode=null;
+
+  const lines=text.split('\n');
+  const year=new Date().getFullYear();
+
+  lines.forEach(line=>{
+    line=line.trim();
+    if(!line) return;
+
+    // Date header: "June 10th delivery:" or "June 10th:" or "June 28th delivery:"
+    const dateHeaderMatch=line.match(/([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?\s*(?:delivery)?[:\-]/i);
+    if(dateHeaderMatch){
+      const monthName=dateHeaderMatch[1].toLowerCase();
+      const day=parseInt(dateHeaderMatch[2]);
+      const monthNum=MONTHS[monthName];
+      if(monthNum){
+        currentDateCsv=`${monthNum}/${day}/${year}`;
+        const monthShort=dateHeaderMatch[1].substring(0,3);
+        currentDateCode=`${day}${monthShort}`;
+        if(!dates.find(d=>d.val===currentDateCsv)) missingDates.push({csvDate:currentDateCsv,dateCode:currentDateCode});
+      }
+      return;
+    }
+
+    // City line: "Riyadh -> 20 cars -> 18 Gray, 2 Atlas White"
+    const cityMatch=line.match(/^([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*(.+)$/i);
+    if(cityMatch){
+      const city=cityMatch[1].trim();
+      const count=parseInt(cityMatch[2]);
+      const colorStr=cityMatch[3].trim();
+
+      // Parse colors: "18 Gray, 2 Atlas White"
+      const colors=[];
+      colorStr.split(/,\s*/).forEach(part=>{
+        part=part.trim().replace(/\.+$/,'');
+        const m=part.match(/^(\d+)\s+(.+)$/);
+        if(m) colors.push({id:Date.now()+Math.random(),name:m[2].trim(),count:parseInt(m[1])});
+      });
+
+      if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) missingCities.push(city);
+
+      newDeliveries.push({count,city,csvDate:currentDateCsv,dateCode:currentDateCode,colors});
+    }
+  });
+
+  if(!newDeliveries.length){showToast('⚠ Could not parse — check Slack format','error');return;}
+
+  // Auto-add missing dates & cities
+  missingDates.forEach(({csvDate,dateCode})=>{
+    if(csvDate&&!dates.find(d=>d.val===csvDate)) dates.push({id:Date.now()+Math.random(),val:csvDate,code:dateCode});
+  });
+  renderDates();
+  missingCities.forEach(city=>{
+    if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) locations.push({id:Date.now()+Math.random(),city,loc:''});
+  });
+  renderLocations();
+
+  car.deliveries=newDeliveries.map(del=>{
+    const dateObj=dates.find(d=>d.val===del.csvDate);
+    const locObj=locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
+    return {id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors:del.colors};
+  });
+
+  const totalCars=newDeliveries.reduce((s,d)=>s+d.count,0);
+  const msgs=[`✓ ${newDeliveries.length} deliveries, ${totalCars} cars`];
+  if(missingDates.length) msgs.push(`⚠ Added ${[...new Set(missingDates.map(d=>d.csvDate))].length} new date(s)`);
+  if(missingCities.length) msgs.push(`⚠ Added cities: ${[...new Set(missingCities)].join(', ')} — add Location strings`);
+  car.parseMsg={text:msgs.join(' | '),type:missingDates.length||missingCities.length?'warn':'ok'};
+  car.collapsed=false;
+  renderCars();autoSave();
+  showToast(`✓ Parsed ${newDeliveries.length} deliveries`,'success');
+}
+
+// ===== PO PDF PARSER =====
 function parseDeliveries(carId){
   const car=cars.find(c=>c.id===carId);
   const text=car.importText||'';
   if(!text.trim()){showToast('⚠ Paste delivery text first','error');return;}
   const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
-  
-  // Parse colors — split by comma, each part is "N Color Name"
+
+  // Parse colors
   let colorsMap={};
   const colorSectionMatch=text.match(/car colou?rs?[:\s]+(.+)/i);
   if(colorSectionMatch){
-    const colorParts=colorSectionMatch[1].split(/,\s*/);
-    colorParts.forEach(part=>{
+    colorSectionMatch[1].split(/,\s*/).forEach(part=>{
       part=part.trim().replace(/\.+$/,'');
       const m=part.match(/^(\d+)\s+(.+)$/);
       if(m) colorsMap[m[2].trim()]=parseInt(m[1]);
@@ -525,23 +619,19 @@ function parseDeliveries(carId){
   while((match=deliveryRegex.exec(text))!==null){
     const count=parseInt(match[1]);
     const city=match[2];
-    const monthName=match[3].toLowerCase();
-    const day=parseInt(match[4]);
-    const monthNum=MONTHS[monthName];
+    const monthNum=MONTHS[match[3].toLowerCase()];
     if(!monthNum) continue;
+    const day=parseInt(match[4]);
     const year=new Date().getFullYear();
     const csvDate=`${monthNum}/${day}/${year}`;
-    const monthShort=match[3].substring(0,3);
-    const dateCode=`${day}${monthShort}`;
-    let dateObj=dates.find(d=>d.val===csvDate);
-    if(!dateObj) missingDates.push({csvDate,dateCode});
-    const locObj=locations.find(l=>l.city.toLowerCase()===city.toLowerCase());
-    if(!locObj) missingCities.push(city);
+    const dateCode=`${day}${match[3].substring(0,3)}`;
+    if(!dates.find(d=>d.val===csvDate)) missingDates.push({csvDate,dateCode});
+    if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) missingCities.push(city);
     newDeliveries.push({count,city,csvDate,dateCode});
   }
-  if(!newDeliveries.length){showToast('⚠ Could not parse deliveries — check text format','error');return;}
+  if(!newDeliveries.length){showToast('⚠ Could not parse — check PO format','error');return;}
 
-  // Auto-add missing dates & cities
+  // Auto-add dates & cities
   missingDates.forEach(({csvDate,dateCode})=>{
     if(!dates.find(d=>d.val===csvDate)) dates.push({id:Date.now()+Math.random(),val:csvDate,code:dateCode});
   });
@@ -551,25 +641,39 @@ function parseDeliveries(carId){
   });
   renderLocations();
 
-  // Build deliveries — full color list from PO on each delivery, user edits after
+  // Distribute colors proportionally across deliveries
   const totalCars=newDeliveries.reduce((s,d)=>s+d.count,0);
   const colorEntries=Object.entries(colorsMap);
-  car.deliveries=newDeliveries.map(del=>{
+
+  // For each color, spread count across deliveries by proportion
+  const colorAllocations=newDeliveries.map(()=>({}));
+  colorEntries.forEach(([name,totalCount])=>{
+    let remaining=totalCount;
+    newDeliveries.forEach((del,idx)=>{
+      const isLast=(idx===newDeliveries.length-1);
+      const allocated=isLast?remaining:Math.round((del.count/totalCars)*totalCount);
+      if(allocated>0) colorAllocations[idx][name]=(colorAllocations[idx][name]||0)+allocated;
+      remaining-=allocated;
+      if(remaining<0) remaining=0;
+    });
+  });
+
+  car.deliveries=newDeliveries.map((del,idx)=>{
     const dateObj=dates.find(d=>d.val===del.csvDate);
     const locObj=locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
-    const deliveryColors=colorEntries.map(([name,count])=>({id:Date.now()+Math.random(),name,count}));
+    const deliveryColors=Object.entries(colorAllocations[idx])
+      .filter(([,c])=>c>0)
+      .map(([name,count])=>({id:Date.now()+Math.random(),name,count}));
     return {id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors:deliveryColors};
   });
 
-  const msgs=[];
-  msgs.push(`✓ ${newDeliveries.length} deliveries, ${totalCars} cars`);
-  if(colorEntries.length) msgs.push(`✓ ${colorEntries.length} colors distributed`);
-  if(missingDates.length) msgs.push(`⚠ Added ${missingDates.length} new date(s) — check PO Setup`);
-  if(missingCities.length) msgs.push(`⚠ Added cities: ${missingCities.join(', ')} — add Location strings`);
+  const msgs=[`✓ ${newDeliveries.length} deliveries, ${totalCars} cars`];
+  if(colorEntries.length) msgs.push(`✓ ${colorEntries.length} colors distributed proportionally`);
+  if(missingDates.length) msgs.push(`⚠ Added ${missingDates.length} date(s)`);
+  if(missingCities.length) msgs.push(`⚠ Added cities: ${[...new Set(missingCities)].join(', ')}`);
   car.parseMsg={text:msgs.join(' | '),type:missingDates.length||missingCities.length?'warn':'ok'};
   car.collapsed=false;
-  renderCars();
-  autoSave();
+  renderCars();autoSave();
   showToast(`✓ Parsed ${newDeliveries.length} deliveries`,'success');
 }
 
