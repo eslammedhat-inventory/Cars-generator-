@@ -551,22 +551,13 @@ function parseDeliveries(carId){
   });
   renderLocations();
 
-  // Build deliveries with proportional color distribution
+  // Build deliveries — full color list from PO on each delivery, user edits after
   const totalCars=newDeliveries.reduce((s,d)=>s+d.count,0);
   const colorEntries=Object.entries(colorsMap);
   car.deliveries=newDeliveries.map(del=>{
     const dateObj=dates.find(d=>d.val===del.csvDate);
     const locObj=locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
-    let deliveryColors=[];
-    if(colorEntries.length&&totalCars>0){
-      let remaining=del.count;
-      colorEntries.forEach(([name,totalCount],idx)=>{
-        const proportion=Math.round((del.count/totalCars)*totalCount);
-        const actual=(idx===colorEntries.length-1)?remaining:Math.min(proportion,remaining);
-        if(actual>0) deliveryColors.push({id:Date.now()+Math.random(),name,count:actual});
-        remaining-=actual;
-      });
-    }
+    const deliveryColors=colorEntries.map(([name,count])=>({id:Date.now()+Math.random(),name,count}));
     return {id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors:deliveryColors};
   });
 
