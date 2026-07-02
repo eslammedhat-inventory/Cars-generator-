@@ -464,9 +464,10 @@ function parseDeliveries(carId) {
   const colorSectionMatch = text.match(/car colou?rs?[:\s]+(.+)/i);
   if(colorSectionMatch) {
     const colorText = colorSectionMatch[1];
-    const colorParts = colorText.split(',');
+    // Split by comma or by number preceded by space (handles "10 Black, 5 Night Blue, 5 Red Flame")
+    const colorParts = colorText.split(/,\s*/);
     colorParts.forEach(part => {
-      part = part.trim().replace(/\.$/,'');
+      part = part.trim().replace(/\.+$/, '');
       const m = part.match(/^(\d+)\s+(.+)$/);
       if(m) { colorsMap[m[2].trim()] = parseInt(m[1]); }
     });
