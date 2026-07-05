@@ -554,10 +554,8 @@ function parseSlack(carId){
   if(!segments.length){showToast('⚠ No date headers found — check format','error');return;}
 
   // Step 2: for each segment, find all city lines
-  const cityRe=/([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*([^(]+?)(?=(?:[A-Za-z]+\s*->|$))/gi;
-
   segments.forEach(seg=>{
-    cityRe.lastIndex=0;
+    const cityRe=/([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*([^(]+?)(?=(?:[A-Za-z]+\s*->|$))/gi;
     let cm;
     while((cm=cityRe.exec(seg.segText))!==null){
       const city=cm[1].trim();
