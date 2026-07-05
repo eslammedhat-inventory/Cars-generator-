@@ -504,66 +504,64 @@ function renderCars(){
 }
 
 // ===== SLACK FORMAT PARSER =====
-// Format: "City -> N cars -> X Color1, Y Color2"
-// Can also have date headers like "June 10th delivery:" before city lines
 function parseSlack(carId){
   const car=cars.find(c=>c.id===carId);
   const text=car.importText||'';
   if(!text.trim()){showToast('⚠ Paste Slack text first','error');return;}
 
   const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+  const year=new Date().getFullYear();
 
   const newDeliveries=[];
   const missingDates=[];
   const missingCities=[];
 
-  // Track current date context
+  // Normalize: replace multiple spaces/newlines with single space for easier regex
+  // But keep structure by working on the raw text with global regex
+
   let currentDateCsv=null;
   let currentDateCode=null;
 
-  const lines=text.split('\n');
-  const year=new Date().getFullYear();
+  // Split by date headers — find all date headers and city lines anywhere in text
+  // First pass: extract all date headers positions
+  const dateHeaderRegex=/(?:(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+)|([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?)\s*(?:delivery)?s*[:\-]/gi;
+  const cityLineRegex=/([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*(.+?)(?=(?:[A-Za-z]+\s*->|\d+(?:st|nd|rd|th)?\s+[A-Za-z]+\s*(?:delivery)?[:\-]|[A-Za-z]+\s+\d+(?:st|nd|rd|th)?\s*(?:delivery)?[:\-]|$))/gi;
 
-  lines.forEach(line=>{
-    line=line.trim();
-    if(!line) return;
+  // Simpler approach: tokenize the whole text
+  // Replace newlines with spaces first
+  const flatText=text.replace(/\r?\n/g,' ').replace(/\s+/g,' ');
 
-    // Date header: "June 10th delivery:" OR "26th July delivery:"
-    const dateHeaderMatch=line.match(/(?:([A-Za-z]+)\s+(\d+)|(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+))(?:st|nd|rd|th)?\s*(?:delivery)?[:\-]/i);
-    if(dateHeaderMatch){
-      const monthName=(dateHeaderMatch[1]||dateHeaderMatch[4]).toLowerCase();
-      const day=parseInt(dateHeaderMatch[2]||dateHeaderMatch[3]);
-      const monthNum=MONTHS[monthName];
-      if(monthNum){
-        currentDateCsv=`${monthNum}/${day}/${year}`;
-        const monthWord=dateHeaderMatch[1]||dateHeaderMatch[4];
-        const monthShort=monthWord.substring(0,3);
-        currentDateCode=`${day}${monthShort}`;
-        if(!dates.find(d=>d.val===currentDateCsv)) missingDates.push({csvDate:currentDateCsv,dateCode:currentDateCode});
-      }
-      return;
-    }
+  // Find all tokens: date headers and city->count->colors
+  const tokenRegex=/(?:(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+)|([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?)\s*(?:delivery\s*)?:|([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*([^:\-\n]+?)(?=(?:[A-Za-z]+\s*->|\d+(?:st|nd|rd|th)?\s+[A-Za-z]+|\s*[A-Za-z]+\s+\d+(?:st|nd|rd|th)?\s*(?:delivery)?:|$))/gi;
 
-    // City line: "Riyadh -> 20 cars -> 18 Gray, 2 Atlas White"
-    const cityMatch=line.match(/^([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*(.+)$/i);
-    if(cityMatch){
-      const city=cityMatch[1].trim();
-      const count=parseInt(cityMatch[2]);
-      const colorStr=cityMatch[3].trim();
-
-      // Parse colors: "18 Gray, 2 Atlas White"
+  let m;
+  while((m=tokenRegex.exec(flatText))!==null){
+    if(m[5]){
+      // City line: group5=city, group6=count, group7=colors
+      const city=m[5].trim();
+      const count=parseInt(m[6]);
+      const colorStr=m[7].trim().replace(/\.+$/,'');
       const colors=[];
       colorStr.split(/,\s*/).forEach(part=>{
         part=part.trim().replace(/\.+$/,'');
-        const m=part.match(/^(\d+)\s+(.+)$/);
-        if(m) colors.push({id:Date.now()+Math.random(),name:m[2].trim(),count:parseInt(m[1])});
+        const cm=part.match(/^(\d+)\s+(.+)$/);
+        if(cm) colors.push({id:Date.now()+Math.random(),name:cm[2].trim(),count:parseInt(cm[1])});
       });
-
       if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) missingCities.push(city);
-
       newDeliveries.push({count,city,csvDate:currentDateCsv,dateCode:currentDateCode,colors});
+    } else {
+      // Date header
+      const day=parseInt(m[1]||m[4]);
+      const monthName=(m[2]||m[3]||'').toLowerCase();
+      const monthNum=MONTHS[monthName];
+      if(monthNum){
+        currentDateCsv=`${monthNum}/${day}/${year}`;
+        const monthShort=(m[2]||m[3]||'').substring(0,3);
+        currentDateCode=`${day}${monthShort}`;
+        if(!dates.find(d=>d.val===currentDateCsv)) missingDates.push({csvDate:currentDateCsv,dateCode:currentDateCode});
+      }
     }
-  });
+  }
 
   if(!newDeliveries.length){showToast('⚠ Could not parse — check Slack format','error');return;}
 
