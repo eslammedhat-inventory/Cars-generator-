@@ -528,15 +528,16 @@ function parseSlack(carId){
     line=line.trim();
     if(!line) return;
 
-    // Date header: "June 10th delivery:" or "June 10th:" or "June 28th delivery:"
-    const dateHeaderMatch=line.match(/([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?\s*(?:delivery)?[:\-]/i);
+    // Date header: "June 10th delivery:" OR "26th July delivery:"
+    const dateHeaderMatch=line.match(/(?:([A-Za-z]+)\s+(\d+)|(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+))(?:st|nd|rd|th)?\s*(?:delivery)?[:\-]/i);
     if(dateHeaderMatch){
-      const monthName=dateHeaderMatch[1].toLowerCase();
-      const day=parseInt(dateHeaderMatch[2]);
+      const monthName=(dateHeaderMatch[1]||dateHeaderMatch[4]).toLowerCase();
+      const day=parseInt(dateHeaderMatch[2]||dateHeaderMatch[3]);
       const monthNum=MONTHS[monthName];
       if(monthNum){
         currentDateCsv=`${monthNum}/${day}/${year}`;
-        const monthShort=dateHeaderMatch[1].substring(0,3);
+        const monthWord=dateHeaderMatch[1]||dateHeaderMatch[4];
+        const monthShort=monthWord.substring(0,3);
         currentDateCode=`${day}${monthShort}`;
         if(!dates.find(d=>d.val===currentDateCsv)) missingDates.push({csvDate:currentDateCsv,dateCode:currentDateCode});
       }
