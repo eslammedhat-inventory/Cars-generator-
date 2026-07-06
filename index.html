@@ -361,7 +361,7 @@ function renderHistory(){
 }
 
 // ===== DATES =====
-function addDate(){dates.push({id:Date.now()+Math.random(),val:'',code:''});renderDates();autoSave();}
+function addDate(){dates.push({id:uid(),val:'',code:''});renderDates();autoSave();}
 function removeDate(id){dates=dates.filter(d=>d.id!==id);renderDates();renderCars();autoSave();}
 function updateDate(id,f,v){const d=dates.find(d=>d.id===id);d[f]=v;renderCars();autoSave();}
 function renderDates(){
@@ -376,16 +376,16 @@ function renderDates(){
 }
 
 // ===== LOCATIONS =====
-function addLocation(){locations.push({id:Date.now()+Math.random(),city:'',loc:''});renderLocations();autoSave();}
+function addLocation(){locations.push({id:uid(),city:'',loc:''});renderLocations();autoSave();}
 function removeLocation(id){locations=locations.filter(l=>l.id!==id);renderLocations();autoSave();}
 function updateLocation(id,f,v){const l=locations.find(l=>l.id===id);l[f]=v;autoSave();}
 function ensureLocation(city){
   if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase()))
-    locations.push({id:Date.now()+Math.random(),city,loc:''});
+    locations.push({id:uid(),city,loc:''});
 }
 function ensureDate(csvDate,dateCode){
   if(!dates.find(d=>d.val===csvDate))
-    dates.push({id:Date.now()+Math.random(),val:csvDate,code:dateCode});
+    dates.push({id:uid(),val:csvDate,code:dateCode});
 }
 function renderLocations(){
   const el=document.getElementById('locations-list');
@@ -499,12 +499,15 @@ function renderCars(){
 // ===== PARSERS =====
 const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
 
+let _idCounter = 0;
+function uid(){ return Date.now() * 1000 + (++_idCounter); }
+
 function parseColors(str){
   const colors=[];
   str.split(/,\s*/).forEach(part=>{
     part=part.trim().replace(/\.+$/,'');
     const m=part.match(/^(\d+)\s+(.+)$/);
-    if(m) colors.push({id:Date.now()+Math.random(),name:m[2].trim(),count:parseInt(m[1])});
+    if(m) colors.push({id:uid(),name:m[2].trim(),count:parseInt(m[1])});
   });
   return colors;
 }
@@ -516,10 +519,9 @@ function parseDate(day,monthStr){
   return{csvDate:`${monthNum}/${day}/${year}`,dateCode:`${day}${monthStr.substring(0,3)}`};
 }
 
-// Extract deliveries from a segment of text (after a date header)
 function extractCityLines(segText){
   const results=[];
-  const cityRe=/([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*([^→\n]+?)(?=(?:[A-Za-z]+\s*->|$))/gi;
+  const cityRe=/([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*([^→]+?)(?=(?:[A-Za-z]+\s*->|$))/gi;
   let m;
   while((m=cityRe.exec(segText))!==null){
     const city=m[1].trim();
@@ -593,12 +595,12 @@ function bulkParseSlack(){
         ensureLocation(cl.city);
         const dateObj=dates.find(d=>d.val===ds.csvDate);
         const locObj=locations.find(l=>l.city.toLowerCase()===cl.city.toLowerCase());
-        deliveries.push({id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:cl.city,count:cl.count,colors:cl.colors});
+        deliveries.push({id:uid(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:cl.city,count:cl.count,colors:cl.colors});
       });
     });
 
     const totalCars=deliveries.reduce((s,d)=>s+d.count,0);
-    newCars.push({id:Date.now()+Math.random(),make,model,year,trim:'',sku:'',deliveries,collapsed:true});
+    newCars.push({id:uid(),make,model,year,trim:'',sku:'',deliveries,collapsed:true});
     msgs.push(`✓ ${make} ${model} ${year}: ${deliveries.length} deliveries, ${totalCars} cars`);
   });
 
@@ -721,12 +723,12 @@ function bulkParsePO(){
     const deliveries=delEntries.map((del,idx)=>{
       const dateObj=dates.find(d=>d.val===del.csvDate);
       const locObj=locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
-      const colors=Object.entries(colorAllocations[idx]).filter(([,c])=>c>0).map(([name,count])=>({id:Date.now()+Math.random(),name,count}));
-      return{id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors};
+      const colors=Object.entries(colorAllocations[idx]).filter(([,c])=>c>0).map(([name,count])=>({id:uid(),name,count}));
+      return{id:uid(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors};
     });
 
     if(deliveries.length){
-      newCars.push({id:Date.now()+Math.random(),make,model,year,trim:'',sku:'',deliveries,collapsed:true});
+      newCars.push({id:uid(),make,model,year,trim:'',sku:'',deliveries,collapsed:true});
       msgs.push(`✓ ${make} ${model} ${year}: ${deliveries.length} deliveries, ${totalCars} cars`);
     }
   });
