@@ -544,35 +544,35 @@ function bulkParseSlack(){
   const text=document.getElementById('bulk-import-text').value.trim();
   if(!text){showToast('⚠ Paste text first','error');return;}
 
-  // Split into model sections by detecting model header lines
-  // Model header: "Brand Model Year: N cars total" or "Brand Model: N cars total"
-  const modelHeaderRe=/^(.+?(?:\d{4})?)\s*:\s*\d+\s*cars?\s*total/gim;
-
+  // Split into model sections: header = "Make Model Year: N cars total"
+  const modelHeaderRe=/^(.+?\d{4}(?:\s+[\w\-]+)?)\s*:\s*\d+\s*cars?\s*total/gim;
   const sections=[];
-  let lastIdx=0,lastHeader=null,m;
+  const matches=[];
+  let m;
   modelHeaderRe.lastIndex=0;
   while((m=modelHeaderRe.exec(text))!==null){
-    if(lastHeader!==null) sections.push({header:lastHeader,body:text.slice(lastIdx,m.index).trim()});
-    lastHeader=m[1].trim();
-    lastIdx=modelHeaderRe.lastIndex;
+    matches.push({header:m[1].trim(),index:m.index,end:modelHeaderRe.lastIndex});
   }
-  if(lastHeader!==null) sections.push({header:lastHeader,body:text.slice(lastIdx).trim()});
+  matches.forEach((match,i)=>{
+    const bodyStart=match.end;
+    const bodyEnd=i+1<matches.length?matches[i+1].index:text.length;
+    sections.push({header:match.header,body:text.slice(bodyStart,bodyEnd).trim()});
+  });
 
-  if(!sections.length){showToast('⚠ No models found — check format','error');return;}
+  if(!sections.length){showToast('⚠ No models found — check format (e.g. "Hyundai Accent 2026: 80 cars total")','error');return;}
 
   const newCars=[];
   const msgs=[];
 
   sections.forEach(sec=>{
-    // Parse Make, Model, Year from header
     const yearMatch=sec.header.match(/(\d{4})/);
     const year=yearMatch?yearMatch[1]:'2026';
-    const nameWithoutYear=sec.header.replace(/\d{4}/,'').trim();
-    const parts=nameWithoutYear.trim().split(/\s+/);
+    const nameNoYear=sec.header.replace(/\d{4}.*/,'').trim();
+    const parts=nameNoYear.trim().split(/\s+/);
     const make=parts[0]||'';
     const model=parts.slice(1).join(' ')||'';
 
-    // Parse date sections from body
+    // Split body by date headers
     const dateHeaderRe=/(?:(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+)|([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?)\s*(?:delivery)?\s*:/gi;
     const dateSegments=[];
     let dLastIdx=0,dLastDate=null,dLastCode=null,dm;
@@ -589,8 +589,7 @@ function bulkParseSlack(){
 
     const deliveries=[];
     dateSegments.forEach(ds=>{
-      const cityLines=extractCityLines(ds.segText);
-      cityLines.forEach(cl=>{
+      extractCityLines(ds.segText).forEach(cl=>{
         ensureLocation(cl.city);
         const dateObj=dates.find(d=>d.val===ds.csvDate);
         const locObj=locations.find(l=>l.city.toLowerCase()===cl.city.toLowerCase());
@@ -604,15 +603,18 @@ function bulkParseSlack(){
   });
 
   cars=[...cars,...newCars];
-  renderDates();renderLocations();renderCars();
-  autoSave();
+  renderDates();renderLocations();renderCars();autoSave();
 
   const resEl=document.getElementById('bulk-parse-result');
   resEl.innerHTML=`✓ Imported ${newCars.length} models<br><span style="opacity:0.7">${msgs.join('<br>')}</span>`;
   resEl.className='parse-result ok';resEl.style.display='block';
   showToast(`✓ Imported ${newCars.length} models`,'success');
-  // Switch to cars tab
-  setTimeout(()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.getElementById('tab-cars').classList.add('active');document.querySelectorAll('.tab')[1].classList.add('active');},500);
+  setTimeout(()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-cars').classList.add('active');
+    document.querySelectorAll('.tab')[1].classList.add('active');
+  },500);
 }
 
 // ===== BULK PO PDF PARSER =====
