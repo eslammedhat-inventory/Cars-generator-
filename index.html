@@ -6,15 +6,7 @@
 <title>PO CSV Generator — invygo</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;
-  --border:#2a2a3a;--border2:#3a3a50;
-  --text:#e8e8f0;--text2:#9090b0;--text3:#5a5a78;
-  --accent:#6c63ff;--accent2:#9d97ff;
-  --green:#00d4aa;--red:#ff4d6d;--yellow:#ffd60a;
-  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
-  --radius:8px;--radius-lg:12px;
-}
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a24;--border:#2a2a3a;--border2:#3a3a50;--text:#e8e8f0;--text2:#9090b0;--text3:#5a5a78;--accent:#6c63ff;--accent2:#9d97ff;--green:#00d4aa;--red:#ff4d6d;--yellow:#ffd60a;--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--radius:8px;--radius-lg:12px;}
 *{box-sizing:border-box;margin:0;padding:0;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh;line-height:1.6;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(108,99,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(108,99,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
@@ -38,8 +30,8 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
 .field{display:flex;flex-direction:column;gap:5px;}
 label{font-family:var(--mono);font-size:11px;letter-spacing:1px;color:var(--text3);text-transform:uppercase;}
-input[type="text"],input[type="number"],select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 12px;width:100%;transition:border-color 0.2s;outline:none;-webkit-appearance:none;appearance:none;}
-input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15);}
+input[type="text"],input[type="number"],select,textarea{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--mono);font-size:13px;padding:9px 12px;width:100%;transition:border-color 0.2s;outline:none;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,99,255,0.15);}
 select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%235a5a78' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:var(--radius);border:1px solid transparent;cursor:pointer;font-family:var(--mono);font-size:13px;font-weight:500;transition:all 0.2s;}
 .btn-ghost{background:var(--bg3);color:var(--text2);border-color:var(--border);}
@@ -64,7 +56,6 @@ select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/
 .delivery-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .delivery-badge{font-family:var(--mono);font-size:10px;padding:3px 8px;border-radius:20px;background:rgba(0,212,170,0.1);color:var(--green);border:1px solid rgba(0,212,170,0.2);}
 .color-row{display:grid;grid-template-columns:1fr 80px 32px;gap:8px;align-items:center;margin-bottom:6px;}
-input[list]{cursor:pointer;}
 .color-status{font-family:var(--mono);font-size:11px;padding:4px 8px;border-radius:6px;margin-top:4px;display:inline-block;}
 .cs-ok{background:rgba(0,212,170,0.1);color:var(--green);}
 .cs-warn{background:rgba(255,214,10,0.1);color:var(--yellow);}
@@ -72,14 +63,16 @@ input[list]{cursor:pointer;}
 .divider{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin:14px 0 10px;}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
 .import-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:10px;}
-.import-box textarea{background:transparent;border:none;color:var(--text2);font-family:var(--mono);font-size:12px;padding:12px;width:100%;height:90px;resize:vertical;line-height:1.6;outline:none;}
+.import-box textarea{background:transparent;border:none;color:var(--text2);font-family:var(--mono);font-size:12px;padding:12px;width:100%;height:140px;resize:vertical;line-height:1.6;outline:none;}
 .import-box textarea:focus{color:var(--text);}
 .import-box textarea::placeholder{color:var(--text3);}
 .import-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-top:1px solid var(--border);}
 .import-bar span{font-family:var(--mono);font-size:10px;color:var(--text3);letter-spacing:1px;}
-.btn-parse{background:rgba(108,99,255,0.15);color:var(--accent2);border:1px solid rgba(108,99,255,0.3);border-radius:6px;padding:5px 14px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.2s;}
-.btn-parse:hover{background:rgba(108,99,255,0.25);}
-.parse-result{font-family:var(--mono);font-size:11px;margin-top:6px;padding:8px 10px;border-radius:6px;}
+.btn-parse{background:rgba(108,99,255,0.15);color:var(--accent2);border:1px solid rgba(108,99,255,0.3);border-radius:6px;padding:6px 16px;font-family:var(--mono);font-size:12px;cursor:pointer;transition:all 0.2s;font-weight:500;}
+.btn-parse:hover{background:rgba(108,99,255,0.3);}
+.btn-parse.green{background:rgba(0,212,170,0.15);color:var(--green);border-color:rgba(0,212,170,0.3);}
+.btn-parse.green:hover{background:rgba(0,212,170,0.25);}
+.parse-result{font-family:var(--mono);font-size:11px;margin-top:8px;padding:10px 12px;border-radius:6px;line-height:1.8;}
 .parse-result.ok{background:rgba(0,212,170,0.08);color:var(--green);border:1px solid rgba(0,212,170,0.2);}
 .parse-result.warn{background:rgba(255,214,10,0.08);color:var(--yellow);border:1px solid rgba(255,214,10,0.2);}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;}
@@ -93,16 +86,21 @@ input[list]{cursor:pointer;}
 .toast.show{transform:translateX(-50%) translateY(0);}
 .toast.success{border-color:rgba(0,212,170,0.4);color:var(--green);}
 .toast.error{border-color:rgba(255,77,109,0.4);color:var(--red);}
-/* History */
-.po-history-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;transition:border-color 0.2s;}
+.po-history-item{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
 .po-history-item:hover{border-color:var(--border2);}
-.po-history-info{display:flex;flex-direction:column;gap:3px;}
 .po-history-num{font-family:var(--mono);font-size:14px;color:var(--accent2);font-weight:600;}
 .po-history-meta{font-family:var(--mono);font-size:11px;color:var(--text3);}
-.po-history-actions{display:flex;gap:6px;}
 .autosave-badge{font-family:var(--mono);font-size:10px;color:var(--text3);display:flex;align-items:center;gap:6px;}
 .autosave-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.3;}}
+/* Colors settings modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center;display:none;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.5rem;width:480px;max-height:80vh;overflow-y:auto;}
+.modal-title{font-family:var(--mono);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent2);margin-bottom:1rem;}
+.color-tag{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-family:var(--mono);font-size:12px;margin:4px;}
+.color-tag button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0;}
+.color-tag button:hover{color:var(--red);}
 </style>
 </head>
 <body>
@@ -112,7 +110,8 @@ input[list]{cursor:pointer;}
       <div class="header-title">PO CSV Generator</div>
       <div class="header-sub">INVYGO — FLEET MANAGEMENT TOOL</div>
     </div>
-    <div style="display:flex;align-items:center;gap:16px;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <button class="btn btn-ghost btn-sm" onclick="openColorsModal()" style="padding:6px 12px">⚙ Colors</button>
       <div class="autosave-badge"><div class="autosave-dot"></div>Auto-save ON</div>
       <div class="logo">PO // GEN</div>
     </div>
@@ -127,6 +126,7 @@ input[list]{cursor:pointer;}
 
   <!-- TAB 1: Setup -->
   <div id="tab-setup" class="tab-content active">
+
     <div class="card">
       <div class="card-title">PO Details</div>
       <div class="g4">
@@ -154,23 +154,45 @@ input[list]{cursor:pointer;}
         </div>
       </div>
       <div style="margin-top:12px;max-width:200px">
-        <div class="field"><label>Mileage</label><input type="number" id="po-mileage" placeholder="e.g. 100" oninput="autoSave()"></div>
+        <div class="field"><label>Mileage</label><input type="number" id="po-mileage" placeholder="100" oninput="autoSave()"></div>
       </div>
     </div>
+
+    <!-- BULK IMPORT -->
+    <div class="card">
+      <div class="card-title">Bulk Import — All Models at Once</div>
+      <p style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:12px;line-height:1.8">
+        Paste the full Slack or PO PDF message here — all models will be created automatically.<br>
+        You only need to add <strong style="color:var(--text)">Trim</strong> and <strong style="color:var(--text)">SKU</strong> per model afterwards.
+      </p>
+      <div class="import-box">
+        <textarea id="bulk-import-text" placeholder="Paste full Slack message or PO PDF text here...&#10;&#10;Slack format example:&#10;Hyundai Accent: 80 cars total&#10;June 10th delivery: Riyadh -> 20 cars -> 18 Gray, 2 Atlas White&#10;&#10;PO PDF format example:&#10;Hyundai Accent 2026&#10;Delivery Date: 20 cars in Riyadh on June 10th. Car Colors: 40 Gray, 10 White."></textarea>
+        <div class="import-bar">
+          <span>All models will be created automatically</span>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-parse green" onclick="bulkParseSlack()">⚡ Slack</button>
+            <button class="btn-parse" onclick="bulkParsePO()">⚡ PO PDF</button>
+          </div>
+        </div>
+      </div>
+      <div id="bulk-parse-result" style="display:none" class="parse-result ok"></div>
+    </div>
+
     <div class="card">
       <div class="card-title">Delivery Dates</div>
-      <p style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:12px">Add all delivery dates from the PO. They will appear as options when adding deliveries.</p>
+      <p style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:12px">Dates are added automatically from import. You can also add manually.</p>
       <div id="dates-list"></div>
       <button class="btn-add-dashed" onclick="addDate()">+ Add Delivery Date</button>
     </div>
+
     <div class="card">
       <div class="card-title">Cities & Locations</div>
-      <p style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:12px">Add each city and its full location string as it appears in the system.</p>
+      <p style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:12px">Cities are added automatically from import. Add the full location string for each.</p>
       <div id="locations-list"></div>
       <button class="btn-add-dashed" onclick="addLocation()">+ Add City</button>
     </div>
+
     <div style="display:flex;gap:8px;margin-top:4px;">
-      <button class="btn btn-accent" onclick="saveCurrentPO()" style="flex:1;padding:12px">💾 Save PO</button>
       <button class="btn btn-ghost" onclick="newPO()" style="flex:1;padding:12px">+ New PO</button>
     </div>
   </div>
@@ -178,7 +200,7 @@ input[list]{cursor:pointer;}
   <!-- TAB 2: Cars -->
   <div id="tab-cars" class="tab-content">
     <div id="cars-list"></div>
-    <button class="btn-add-dashed" onclick="addCar()" style="font-size:14px;padding:14px">+ Add New Model</button>
+    <button class="btn-add-dashed" onclick="addCar()" style="font-size:14px;padding:14px">+ Add New Model Manually</button>
   </div>
 
   <!-- TAB 3: Generate -->
@@ -197,8 +219,7 @@ input[list]{cursor:pointer;}
     <div class="card" id="export-card" style="display:none">
       <div class="card-title">Export</div>
       <p style="font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.8">
-        Click <strong style="color:var(--text)">Copy Full CSV</strong>, then open <strong style="color:var(--text)">Google Sheets</strong> or <strong style="color:var(--text)">Notepad</strong> and paste (Ctrl+V).<br>
-        In Google Sheets: <strong style="color:var(--text)">Data → Split text to columns → Comma</strong>.
+        Click <strong style="color:var(--text)">Copy Full CSV</strong> then paste in Google Sheets (Data → Split text to columns → Comma) or Notepad and save as .csv
       </p>
       <div class="g2">
         <button class="btn btn-ghost" onclick="copyCSV()" style="width:100%;padding:13px">📋 Copy Full CSV</button>
@@ -211,9 +232,22 @@ input[list]{cursor:pointer;}
   <div id="tab-history" class="tab-content">
     <div class="card">
       <div class="card-title">Saved POs</div>
-      <p style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:14px">Click Load to open a saved PO and continue working on it.</p>
       <div id="history-list"></div>
     </div>
+  </div>
+</div>
+
+<!-- Colors Modal -->
+<div class="modal-overlay" id="colors-modal" onclick="closeColorsModal(event)">
+  <div class="modal">
+    <div class="modal-title">⚙ Color Options</div>
+    <p style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:14px">These colors appear in the dropdown when adding colors manually. Custom colors typed during import are added automatically.</p>
+    <div id="colors-tags" style="margin-bottom:14px"></div>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="new-color-input" placeholder="Add new color..." style="flex:1" onkeydown="if(event.key==='Enter')addColorOption()">
+      <button class="btn btn-accent btn-sm" onclick="addColorOption()" style="padding:8px 16px">+ Add</button>
+    </div>
+    <button class="btn btn-ghost" onclick="closeColorsModal()" style="width:100%;margin-top:12px">Close</button>
   </div>
 </div>
 
@@ -222,20 +256,37 @@ input[list]{cursor:pointer;}
 
 <script>
 // ===== STATE =====
-let dates=[], locations=[], cars=[], generatedCSV='';
+let dates=[],locations=[],cars=[],generatedCSV='';
 let autoSaveTimer=null;
+let colorOptions=['White','Gray','Silver','Black','Blue','Green','Beige','Red'];
 
 // ===== COLORS =====
-let colorOptions=['White','Gray','Silver','Black','Blue','Green','Beige','Red'];
 function updateColorsDatalist(){
   document.getElementById('colors-list').innerHTML=colorOptions.map(c=>`<option value="${c}">`).join('');
+  renderColorsTags();
 }
-function saveCustomColor(val){
-  if(val&&!colorOptions.includes(val)){colorOptions.push(val);updateColorsDatalist();}
+function renderColorsTags(){
+  const el=document.getElementById('colors-tags');
+  if(!el) return;
+  el.innerHTML=colorOptions.map((c,i)=>`
+    <span class="color-tag">${c}<button onclick="removeColorOption(${i})">×</button></span>
+  `).join('');
 }
+function addColorOption(){
+  const inp=document.getElementById('new-color-input');
+  const val=inp.value.trim();
+  if(val&&!colorOptions.includes(val)){colorOptions.push(val);updateColorsDatalist();saveColorOptions();}
+  inp.value='';
+}
+function removeColorOption(i){colorOptions.splice(i,1);updateColorsDatalist();saveColorOptions();}
+function saveColorOptions(){localStorage.setItem('colorOptions',JSON.stringify(colorOptions));}
+function loadColorOptions(){const s=localStorage.getItem('colorOptions');if(s)colorOptions=JSON.parse(s);}
+function saveCustomColor(val){if(val&&!colorOptions.includes(val)){colorOptions.push(val);updateColorsDatalist();saveColorOptions();}}
+function openColorsModal(){document.getElementById('colors-modal').classList.add('open');renderColorsTags();}
+function closeColorsModal(e){if(!e||e.target===document.getElementById('colors-modal'))document.getElementById('colors-modal').classList.remove('open');}
 
 // ===== TOAST =====
-function showToast(msg,type='',duration=3000){
+function showToast(msg,type='',duration=3500){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast show '+type;
   setTimeout(()=>t.className='toast',duration);
@@ -252,120 +303,74 @@ function switchTab(name,btn){
 }
 
 // ===== AUTO SAVE =====
-function autoSave(){
-  clearTimeout(autoSaveTimer);
-  autoSaveTimer=setTimeout(()=>saveCurrentPO(true),1500);
+function autoSave(){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(()=>savePO(true),1500);}
+function getState(){return{poNum:document.getElementById('po-num').value.trim(),poType:document.getElementById('po-type').value,poCondition:document.getElementById('po-condition').value,poStatus:document.getElementById('po-status').value,poMileage:document.getElementById('po-mileage').value,dates,locations,cars,savedAt:new Date().toISOString()};}
+function savePO(silent=false){
+  const state=getState();
+  if(!state.poNum){return;}
+  localStorage.setItem('po_'+state.poNum,JSON.stringify(state));
+  let idx=JSON.parse(localStorage.getItem('po_index')||'[]');
+  if(!idx.includes(state.poNum)){idx.push(state.poNum);localStorage.setItem('po_index',JSON.stringify(idx));}
+  if(!silent) showToast('✓ Saved','success');
 }
-
-function getCurrentState(){
-  return {
-    poNum: document.getElementById('po-num').value.trim(),
-    poType: document.getElementById('po-type').value,
-    poCondition: document.getElementById('po-condition').value,
-    poStatus: document.getElementById('po-status').value,
-    poMileage: document.getElementById('po-mileage').value,
-    dates, locations, cars,
-    savedAt: new Date().toISOString()
-  };
-}
-
-function saveCurrentPO(silent=false){
-  const state=getCurrentState();
-  if(!state.poNum){if(!silent)showToast('⚠ Enter PO Number first','error');return;}
-  const key='po_'+state.poNum;
-  localStorage.setItem(key,JSON.stringify(state));
-  // Update index
-  let index=JSON.parse(localStorage.getItem('po_index')||'[]');
-  if(!index.includes(state.poNum)) index.push(state.poNum);
-  localStorage.setItem('po_index',JSON.stringify(index));
-  if(!silent) showToast(`✓ PO ${state.poNum} saved`,'success');
-}
-
 function loadPO(poNum){
-  const raw=localStorage.getItem('po_'+poNum);
-  if(!raw){showToast('⚠ PO not found','error');return;}
-  const state=JSON.parse(raw);
-  // Restore fields
-  document.getElementById('po-num').value=state.poNum||'';
-  document.getElementById('po-type').value=state.poType||'';
-  document.getElementById('po-condition').value=state.poCondition||'';
-  document.getElementById('po-status').value=state.poStatus||'';
-  document.getElementById('po-mileage').value=state.poMileage||'';
-  dates=state.dates||[];
-  locations=state.locations||[];
-  cars=state.cars||[];
+  const raw=localStorage.getItem('po_'+poNum);if(!raw)return;
+  const s=JSON.parse(raw);
+  document.getElementById('po-num').value=s.poNum||'';
+  document.getElementById('po-type').value=s.poType||'';
+  document.getElementById('po-condition').value=s.poCondition||'';
+  document.getElementById('po-status').value=s.poStatus||'';
+  document.getElementById('po-mileage').value=s.poMileage||'';
+  dates=s.dates||[];locations=s.locations||[];cars=s.cars||[];
   renderDates();renderLocations();renderCars();
-  // Switch to setup tab
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-setup').classList.add('active');
   document.querySelector('.tab').classList.add('active');
-  showToast(`✓ PO ${poNum} loaded`,'success');
+  showToast('✓ PO '+poNum+' loaded','success');
 }
-
 function deletePO(poNum){
-  if(!confirm(`Delete PO ${poNum}?`)) return;
+  if(!confirm('Delete PO '+poNum+'?'))return;
   localStorage.removeItem('po_'+poNum);
-  let index=JSON.parse(localStorage.getItem('po_index')||'[]');
-  index=index.filter(n=>n!==poNum);
-  localStorage.setItem('po_index',JSON.stringify(index));
-  renderHistory();
-  showToast(`✓ PO ${poNum} deleted`,'success');
+  let idx=JSON.parse(localStorage.getItem('po_index')||'[]');
+  idx=idx.filter(n=>n!==poNum);localStorage.setItem('po_index',JSON.stringify(idx));
+  renderHistory();showToast('✓ Deleted','success');
 }
-
 function newPO(){
-  if(!confirm('Start a new PO? Unsaved changes will be lost.')) return;
-  document.getElementById('po-num').value='';
-  document.getElementById('po-type').value='';
-  document.getElementById('po-condition').value='';
-  document.getElementById('po-status').value='';
-  document.getElementById('po-mileage').value='';
-  dates=[];locations=[];cars=[];
-  generatedCSV='';
+  if(!confirm('Start a new PO? Unsaved changes will be lost.'))return;
+  ['po-num','po-type','po-condition','po-status','po-mileage'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  dates=[];locations=[];cars=[];generatedCSV='';
+  document.getElementById('bulk-import-text').value='';
+  document.getElementById('bulk-parse-result').style.display='none';
   document.getElementById('output-box').style.display='none';
   document.getElementById('export-card').style.display='none';
   renderDates();renderLocations();renderCars();
   showToast('✓ New PO started','success');
 }
-
 function renderHistory(){
   const el=document.getElementById('history-list');
-  let index=JSON.parse(localStorage.getItem('po_index')||'[]');
-  if(!index.length){
-    el.innerHTML='<div class="empty-hint">No saved POs yet. Fill in PO details and click Save PO.</div>';
-    return;
-  }
-  el.innerHTML=index.slice().reverse().map(poNum=>{
-    const raw=localStorage.getItem('po_'+poNum);
-    if(!raw) return '';
+  let idx=JSON.parse(localStorage.getItem('po_index')||'[]');
+  if(!idx.length){el.innerHTML='<div class="empty-hint">No saved POs yet.</div>';return;}
+  el.innerHTML=idx.slice().reverse().map(poNum=>{
+    const raw=localStorage.getItem('po_'+poNum);if(!raw)return'';
     const s=JSON.parse(raw);
-    const totalCars=s.cars.reduce((sum,c)=>sum+c.deliveries.reduce((s2,d)=>s2+d.count,0),0);
+    const total=s.cars.reduce((sum,c)=>sum+c.deliveries.reduce((s2,d)=>s2+d.count,0),0);
     const savedAt=s.savedAt?new Date(s.savedAt).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
-    return `
-      <div class="po-history-item">
-        <div class="po-history-info">
-          <div class="po-history-num">PO-${poNum}</div>
-          <div class="po-history-meta">${s.cars.length} models · ${totalCars} cars · ${s.poType||'—'} · Saved ${savedAt}</div>
-        </div>
-        <div class="po-history-actions">
-          <button class="btn btn-accent btn-sm" onclick="loadPO('${poNum}')">Load</button>
-          <button class="btn btn-danger btn-sm" onclick="deletePO('${poNum}')">Delete</button>
-        </div>
-      </div>`;
+    return`<div class="po-history-item"><div><div class="po-history-num">PO-${poNum}</div><div class="po-history-meta">${s.cars.length} models · ${total} cars · ${s.poType||'—'} · ${savedAt}</div></div><div style="display:flex;gap:6px"><button class="btn btn-accent btn-sm" onclick="loadPO('${poNum}')">Load</button><button class="btn btn-danger btn-sm" onclick="deletePO('${poNum}')">Delete</button></div></div>`;
   }).join('');
 }
 
 // ===== DATES =====
 function addDate(){dates.push({id:Date.now()+Math.random(),val:'',code:''});renderDates();autoSave();}
 function removeDate(id){dates=dates.filter(d=>d.id!==id);renderDates();renderCars();autoSave();}
-function updateDate(id,field,val){const d=dates.find(d=>d.id===id);d[field]=val;renderCars();autoSave();}
+function updateDate(id,f,v){const d=dates.find(d=>d.id===id);d[f]=v;renderCars();autoSave();}
 function renderDates(){
   const el=document.getElementById('dates-list');
-  if(!dates.length){el.innerHTML='<div class="empty-hint">No delivery dates added yet. Click "+ Add Delivery Date" below.</div>';return;}
+  if(!dates.length){el.innerHTML='<div class="empty-hint">No dates yet — added automatically from import, or add manually.</div>';return;}
   el.innerHTML=dates.map(d=>`
     <div style="display:grid;grid-template-columns:1fr 1fr 32px;gap:8px;align-items:end;margin-bottom:8px">
-      <div class="field"><label>Date Value (in CSV) — e.g. 7/20/2026</label><input type="text" value="${d.val}" onchange="updateDate(${d.id},'val',this.value)" placeholder="7/20/2026"></div>
-      <div class="field"><label>Date Code (in VIN & Reg) — e.g. 20Jul</label><input type="text" value="${d.code}" onchange="updateDate(${d.id},'code',this.value)" placeholder="20Jul"></div>
+      <div class="field"><label>Date Value (CSV) e.g. 6/10/2026</label><input type="text" value="${d.val}" onchange="updateDate(${d.id},'val',this.value)" placeholder="6/10/2026"></div>
+      <div class="field"><label>Date Code (VIN) e.g. 10Jun</label><input type="text" value="${d.code}" onchange="updateDate(${d.id},'code',this.value)" placeholder="10Jun"></div>
       <button class="btn btn-danger btn-sm" onclick="removeDate(${d.id})" style="align-self:end;width:32px;height:36px">×</button>
     </div>`).join('');
 }
@@ -373,29 +378,35 @@ function renderDates(){
 // ===== LOCATIONS =====
 function addLocation(){locations.push({id:Date.now()+Math.random(),city:'',loc:''});renderLocations();autoSave();}
 function removeLocation(id){locations=locations.filter(l=>l.id!==id);renderLocations();autoSave();}
-function updateLocation(id,field,val){const l=locations.find(l=>l.id===id);l[field]=val;autoSave();}
+function updateLocation(id,f,v){const l=locations.find(l=>l.id===id);l[f]=v;autoSave();}
+function ensureLocation(city){
+  if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase()))
+    locations.push({id:Date.now()+Math.random(),city,loc:''});
+}
+function ensureDate(csvDate,dateCode){
+  if(!dates.find(d=>d.val===csvDate))
+    dates.push({id:Date.now()+Math.random(),val:csvDate,code:dateCode});
+}
 function renderLocations(){
   const el=document.getElementById('locations-list');
-  if(!locations.length){el.innerHTML='<div class="empty-hint">No cities added yet. Click "+ Add City" below.</div>';return;}
+  if(!locations.length){el.innerHTML='<div class="empty-hint">No cities yet — added automatically from import, or add manually.</div>';return;}
   el.innerHTML=locations.map(l=>`
     <div style="display:grid;grid-template-columns:160px 1fr 32px;gap:8px;align-items:end;margin-bottom:8px">
-      <div class="field"><label>City Name</label><input type="text" value="${l.city}" onchange="updateLocation(${l.id},'city',this.value)" placeholder="Riyadh"></div>
-      <div class="field"><label>Location String (in CSV)</label><input type="text" value="${l.loc}" onchange="updateLocation(${l.id},'loc',this.value)" placeholder="Riyadh - Al Quds - Pickup"></div>
+      <div class="field"><label>City</label><input type="text" value="${l.city}" onchange="updateLocation(${l.id},'city',this.value)" placeholder="Riyadh"></div>
+      <div class="field"><label>Location String (CSV)</label><input type="text" value="${l.loc}" onchange="updateLocation(${l.id},'loc',this.value)" placeholder="Riyadh - Al Quds - Pickup"></div>
       <button class="btn btn-danger btn-sm" onclick="removeLocation(${l.id})" style="align-self:end;width:32px;height:36px">×</button>
     </div>`).join('');
 }
 
 // ===== CARS =====
-function addCar(){cars.push({id:Date.now(),make:'',model:'',year:'2026',trim:'',sku:'',deliveries:[],collapsed:false,importText:'',parseMsg:null});renderCars();}
+function addCar(){cars.push({id:Date.now(),make:'',model:'',year:'2026',trim:'',sku:'',deliveries:[],collapsed:false});renderCars();autoSave();}
 function removeCar(id){if(!confirm('Delete this model?'))return;cars=cars.filter(c=>c.id!==id);renderCars();autoSave();}
 function toggleCar(id){const c=cars.find(c=>c.id===id);c.collapsed=!c.collapsed;renderCars();}
 function sfCar(id,f,v){cars.find(c=>c.id===id)[f]=v;refreshCarHeader(id);autoSave();}
 function refreshCarHeader(id){
   const c=cars.find(c=>c.id===id);
-  const el=document.querySelector(`[data-ch="${id}"]`);
-  if(el) el.textContent=`${c.make||'?'} ${c.model||'?'} ${c.year}`;
-  const badge=document.querySelector(`[data-cb="${id}"]`);
-  if(badge) badge.textContent=c.deliveries.reduce((s,d)=>s+d.count,0)+' cars';
+  const el=document.querySelector(`[data-ch="${id}"]`);if(el)el.textContent=`${c.make||'?'} ${c.model||'?'} ${c.year}`;
+  const badge=document.querySelector(`[data-cb="${id}"]`);if(badge)badge.textContent=c.deliveries.reduce((s,d)=>s+d.count,0)+' cars';
 }
 function addDelivery(carId){
   const d0=dates[0],l0=locations[0];
@@ -405,40 +416,34 @@ function addDelivery(carId){
 function removeDelivery(carId,delId){const c=cars.find(c=>c.id===carId);c.deliveries=c.deliveries.filter(d=>d.id!==delId);renderCars();autoSave();}
 function sdDel(carId,delId,f,v){
   const d=cars.find(c=>c.id===carId).deliveries.find(d=>d.id===delId);
-  d[f]=f==='count'?parseInt(v)||0:v;
-  refreshColorTotal(carId,delId);refreshCarHeader(carId);autoSave();
+  d[f]=f==='count'?parseInt(v)||0:v;refreshColorTotal(carId,delId);refreshCarHeader(carId);autoSave();
 }
 function addColor(carId,delId){cars.find(c=>c.id===carId).deliveries.find(d=>d.id===delId).colors.push({id:Date.now(),name:'',count:1});renderCars();}
 function removeColor(carId,delId,colId){const d=cars.find(c=>c.id===carId).deliveries.find(d=>d.id===delId);d.colors=d.colors.filter(c=>c.id!==colId);renderCars();autoSave();}
 function scCol(carId,delId,colId,f,v){
   const col=cars.find(c=>c.id===carId).deliveries.find(d=>d.id===delId).colors.find(c=>c.id===colId);
-  col[f]=f==='count'?parseInt(v)||0:v;
-  if(f==='name') saveCustomColor(v);
-  refreshColorTotal(carId,delId);autoSave();
+  col[f]=f==='count'?parseInt(v)||0:v;if(f==='name')saveCustomColor(v);refreshColorTotal(carId,delId);autoSave();
 }
 function refreshColorTotal(carId,delId){
-  const d=cars.find(c=>c.id===carId)?.deliveries.find(d=>d.id===delId);
-  if(!d) return;
-  const el=document.getElementById(`ct-${carId}-${delId}`);
-  if(!el) return;
-  const total=d.colors.reduce((s,c)=>s+c.count,0);
-  const diff=d.count-total;
+  const d=cars.find(c=>c.id===carId)?.deliveries.find(d=>d.id===delId);if(!d)return;
+  const el=document.getElementById(`ct-${carId}-${delId}`);if(!el)return;
+  const total=d.colors.reduce((s,c)=>s+c.count,0);const diff=d.count-total;
   if(!d.colors.length){el.textContent='';el.className='color-status';return;}
   if(diff===0){el.textContent='✓ Colors complete';el.className='color-status cs-ok';}
   else if(diff>0){el.textContent=`${diff} cars without color`;el.className='color-status cs-warn';}
   else{el.textContent=`${Math.abs(diff)} extra colors`;el.className='color-status cs-err';}
 }
 function getDateOptions(selectedId){
-  if(!dates.length) return '<option value="">-- Add dates in PO Setup --</option>';
-  return '<option value="">-- Select Date --</option>'+dates.map(d=>`<option value="${d.id}" ${d.id==selectedId?'selected':''}>${d.val} (${d.code})</option>`).join('');
+  if(!dates.length)return'<option value="">-- Add dates in PO Setup --</option>';
+  return'<option value="">-- Select --</option>'+dates.map(d=>`<option value="${d.id}" ${d.id==selectedId?'selected':''}>${d.val} (${d.code})</option>`).join('');
 }
 function getCityOptions(selectedCity){
-  if(!locations.length) return '<option value="">-- Add cities in PO Setup --</option>';
-  return '<option value="">-- Select City --</option>'+locations.map(l=>`<option value="${l.city}" ${l.city===selectedCity?'selected':''}>${l.city}</option>`).join('');
+  if(!locations.length)return'<option value="">-- Add cities in PO Setup --</option>';
+  return'<option value="">-- Select --</option>'+locations.map(l=>`<option value="${l.city}" ${l.city===selectedCity?'selected':''}>${l.city}</option>`).join('');
 }
 function renderCars(){
   const el=document.getElementById('cars-list');
-  if(!cars.length){el.innerHTML='<div class="empty-hint" style="padding:40px;font-size:13px">No models added yet — click "+ Add New Model" below.</div>';return;}
+  if(!cars.length){el.innerHTML='<div class="empty-hint" style="padding:40px;font-size:13px">No models yet — import from PO Setup or add manually below.</div>';return;}
   el.innerHTML=cars.map((car,ci)=>`
     <div class="car-block">
       <div class="car-header" onclick="toggleCar(${car.id})">
@@ -461,20 +466,8 @@ function renderCars(){
           <div class="field"><label>Trim</label><input type="text" value="${car.trim}" onchange="sfCar(${car.id},'trim',this.value)" placeholder="Smart"></div>
         </div>
         <div class="field" style="margin-bottom:14px"><label>SKU</label><input type="text" value="${car.sku}" onchange="sfCar(${car.id},'sku',this.value)" placeholder="e.g. COM-STO-KSA-285-CON117-B35-M01-Y26-T01"></div>
-        <div class="divider">Quick Import</div>
-        <div class="import-box">
-          <textarea placeholder="Paste from PO PDF:&#10;7 cars in Riyadh on July 20th. Car Colors: 10 Black, 5 Night Blue, 5 Universal White.&#10;&#10;— OR — paste from Slack:&#10;Riyadh -> 20 cars -> 18 Gray, 2 Atlas White&#10;Jeddah -> 20 cars -> 18 Gray, 2 Atlas White" onchange="sfCar(${car.id},'importText',this.value)">${car.importText||''}</textarea>
-          <div class="import-bar">
-            <span>Supports PO PDF format &amp; Slack format</span>
-            <div style="display:flex;gap:6px">
-              <button class="btn-parse" onclick="parseSlack(${car.id})">⚡ Slack</button>
-              <button class="btn-parse" onclick="parseDeliveries(${car.id})">⚡ PO PDF</button>
-            </div>
-          </div>
-        </div>
-        ${car.parseMsg?`<div class="parse-result ${car.parseMsg.type}">${car.parseMsg.text}</div>`:''}
         <div class="divider">Deliveries</div>
-        ${car.deliveries.length===0?'<div class="empty-hint">No deliveries added yet.</div>':''}
+        ${car.deliveries.length===0?'<div class="empty-hint">No deliveries.</div>':''}
         ${car.deliveries.map(d=>`
           <div class="delivery-block">
             <div class="delivery-top">
@@ -503,195 +496,255 @@ function renderCars(){
   cars.forEach(car=>car.deliveries.forEach(d=>refreshColorTotal(car.id,d.id)));
 }
 
-// ===== SLACK FORMAT PARSER =====
-function parseSlack(carId){
-  const car=cars.find(c=>c.id===carId);
-  const text=car.importText||'';
-  if(!text.trim()){showToast('⚠ Paste Slack text first','error');return;}
+// ===== PARSERS =====
+const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
 
-  const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
-  const year=new Date().getFullYear();
-
-  const newDeliveries=[];
-  const missingDates=[];
-  const missingCities=[];
-
-  // Step 1: find all date headers and their positions
-  // Matches: "26th July delivery:" or "July 26th delivery:" or "8th August delivery:"
-  const dateHeaderRe=/(?:(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+)|([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?)\s*(?:delivery)?\s*:/gi;
-
-  const segments=[]; // [{csvDate, dateCode, text}]
-  let lastIndex=0;
-  let lastDate=null;
-  let lastDateCode=null;
-  let m;
-
-  // Reset regex
-  dateHeaderRe.lastIndex=0;
-
-  while((m=dateHeaderRe.exec(text))!==null){
-    // Save previous segment
-    if(lastDate!==null){
-      segments.push({csvDate:lastDate,dateCode:lastDateCode,segText:text.slice(lastIndex,m.index)});
-    }
-    // Parse new date
-    const day=parseInt(m[1]||m[4]);
-    const monthName=(m[2]||m[3]||'').toLowerCase();
-    const monthNum=MONTHS[monthName];
-    if(monthNum){
-      lastDate=`${monthNum}/${day}/${year}`;
-      const monthWord=m[2]||m[3]||'';
-      lastDateCode=`${day}${monthWord.substring(0,3)}`;
-      if(!dates.find(d=>d.val===lastDate)) missingDates.push({csvDate:lastDate,dateCode:lastDateCode});
-    }
-    lastIndex=dateHeaderRe.lastIndex;
-  }
-  // Last segment
-  if(lastDate!==null){
-    segments.push({csvDate:lastDate,dateCode:lastDateCode,segText:text.slice(lastIndex)});
-  }
-
-  if(!segments.length){showToast('⚠ No date headers found — check format','error');return;}
-
-  // Step 2: for each segment, find all city lines
-  segments.forEach(seg=>{
-    const cityRe=/([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*([^(]+?)(?=(?:[A-Za-z]+\s*->|$))/gi;
-    let cm;
-    while((cm=cityRe.exec(seg.segText))!==null){
-      const city=cm[1].trim();
-      const count=parseInt(cm[2]);
-      const colorStr=cm[3].trim().replace(/\.+$/,'');
-
-      // Parse colors
-      const colors=[];
-      colorStr.split(/,\s*/).forEach(part=>{
-        part=part.trim().replace(/\.+$/,'');
-        const pm=part.match(/^(\d+)\s+(.+)$/);
-        if(pm) colors.push({id:Date.now()+Math.random(),name:pm[2].trim(),count:parseInt(pm[1])});
-      });
-
-      if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) missingCities.push(city);
-      newDeliveries.push({count,city,csvDate:seg.csvDate,dateCode:seg.dateCode,colors});
-    }
+function parseColors(str){
+  const colors=[];
+  str.split(/,\s*/).forEach(part=>{
+    part=part.trim().replace(/\.+$/,'');
+    const m=part.match(/^(\d+)\s+(.+)$/);
+    if(m) colors.push({id:Date.now()+Math.random(),name:m[2].trim(),count:parseInt(m[1])});
   });
-
-  if(!newDeliveries.length){showToast('⚠ Could not parse city lines — check format','error');return;}
-
-  // Auto-add missing dates & cities
-  missingDates.forEach(({csvDate,dateCode})=>{
-    if(csvDate&&!dates.find(d=>d.val===csvDate)) dates.push({id:Date.now()+Math.random(),val:csvDate,code:dateCode});
-  });
-  renderDates();
-  missingCities.forEach(city=>{
-    if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) locations.push({id:Date.now()+Math.random(),city,loc:''});
-  });
-  renderLocations();
-
-  car.deliveries=newDeliveries.map(del=>{
-    const dateObj=dates.find(d=>d.val===del.csvDate);
-    const locObj=locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
-    return {id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors:del.colors};
-  });
-
-  const totalCars=newDeliveries.reduce((s,d)=>s+d.count,0);
-  const msgs=[`✓ ${newDeliveries.length} deliveries, ${totalCars} cars`];
-  if(missingDates.length) msgs.push(`⚠ Added ${[...new Set(missingDates.map(d=>d.csvDate))].length} new date(s)`);
-  if(missingCities.length) msgs.push(`⚠ Added cities: ${[...new Set(missingCities)].join(', ')} — add Location strings`);
-  car.parseMsg={text:msgs.join(' | '),type:missingDates.length||missingCities.length?'warn':'ok'};
-  car.collapsed=false;
-  renderCars();autoSave();
-  showToast(`✓ Parsed ${newDeliveries.length} deliveries`,'success');
+  return colors;
 }
 
-// ===== PO PDF PARSER =====
-function parseDeliveries(carId){
-  const car=cars.find(c=>c.id===carId);
-  const text=car.importText||'';
-  if(!text.trim()){showToast('⚠ Paste delivery text first','error');return;}
-  const MONTHS={january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,oct:10,nov:11,dec:12};
+function parseDate(day,monthStr){
+  const year=new Date().getFullYear();
+  const monthNum=MONTHS[monthStr.toLowerCase()];
+  if(!monthNum) return null;
+  return{csvDate:`${monthNum}/${day}/${year}`,dateCode:`${day}${monthStr.substring(0,3)}`};
+}
 
-  // Parse colors
-  let colorsMap={};
-  const colorSectionMatch=text.match(/car colou?rs?[:\s]+(.+)/i);
-  if(colorSectionMatch){
-    colorSectionMatch[1].split(/,\s*/).forEach(part=>{
-      part=part.trim().replace(/\.+$/,'');
-      const m=part.match(/^(\d+)\s+(.+)$/);
-      if(m) colorsMap[m[2].trim()]=parseInt(m[1]);
+// Extract deliveries from a segment of text (after a date header)
+function extractCityLines(segText){
+  const results=[];
+  const cityRe=/([A-Za-z]+)\s*-+>\s*(\d+)\s*cars?\s*-+>\s*([^→\n]+?)(?=(?:[A-Za-z]+\s*->|$))/gi;
+  let m;
+  while((m=cityRe.exec(segText))!==null){
+    const city=m[1].trim();
+    const count=parseInt(m[2]);
+    const colors=parseColors(m[3]);
+    results.push({city,count,colors});
+  }
+  return results;
+}
+
+// Split text into model blocks
+function splitIntoModelBlocks(text){
+  // Models are separated by lines like "Make Model Year: N cars total" or "Make Model Year\n"
+  // Strategy: find model header lines, split on them
+  const modelHeaderRe=/([A-Za-z][A-Za-z\s]+?\d{4})\s*(?:[\w\s]*)?\s*(?::\s*\d+\s*cars?\s*total)?/gi;
+  // Actually simpler: split on lines that match "Word Word ... Year: N cars total" or lines ending with year like "Hyundai Accent 2026"
+  return text;
+}
+
+// ===== BULK SLACK PARSER =====
+function bulkParseSlack(){
+  const text=document.getElementById('bulk-import-text').value.trim();
+  if(!text){showToast('⚠ Paste text first','error');return;}
+
+  // Split into model sections by detecting model header lines
+  // Model header: "Brand Model Year: N cars total" or "Brand Model: N cars total"
+  const modelHeaderRe=/^(.+?(?:\d{4})?)\s*:\s*\d+\s*cars?\s*total/gim;
+
+  const sections=[];
+  let lastIdx=0,lastHeader=null,m;
+  modelHeaderRe.lastIndex=0;
+  while((m=modelHeaderRe.exec(text))!==null){
+    if(lastHeader!==null) sections.push({header:lastHeader,body:text.slice(lastIdx,m.index).trim()});
+    lastHeader=m[1].trim();
+    lastIdx=modelHeaderRe.lastIndex;
+  }
+  if(lastHeader!==null) sections.push({header:lastHeader,body:text.slice(lastIdx).trim()});
+
+  if(!sections.length){showToast('⚠ No models found — check format','error');return;}
+
+  const newCars=[];
+  const msgs=[];
+
+  sections.forEach(sec=>{
+    // Parse Make, Model, Year from header
+    const yearMatch=sec.header.match(/(\d{4})/);
+    const year=yearMatch?yearMatch[1]:'2026';
+    const nameWithoutYear=sec.header.replace(/\d{4}/,'').trim();
+    const parts=nameWithoutYear.trim().split(/\s+/);
+    const make=parts[0]||'';
+    const model=parts.slice(1).join(' ')||'';
+
+    // Parse date sections from body
+    const dateHeaderRe=/(?:(\d+)(?:st|nd|rd|th)?\s+([A-Za-z]+)|([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?)\s*(?:delivery)?\s*:/gi;
+    const dateSegments=[];
+    let dLastIdx=0,dLastDate=null,dLastCode=null,dm;
+    dateHeaderRe.lastIndex=0;
+    while((dm=dateHeaderRe.exec(sec.body))!==null){
+      if(dLastDate) dateSegments.push({csvDate:dLastDate,dateCode:dLastCode,segText:sec.body.slice(dLastIdx,dm.index)});
+      const day=parseInt(dm[1]||dm[4]);
+      const monthStr=dm[2]||dm[3]||'';
+      const parsed=parseDate(day,monthStr);
+      if(parsed){dLastDate=parsed.csvDate;dLastCode=parsed.dateCode;ensureDate(parsed.csvDate,parsed.dateCode);}
+      dLastIdx=dateHeaderRe.lastIndex;
+    }
+    if(dLastDate) dateSegments.push({csvDate:dLastDate,dateCode:dLastCode,segText:sec.body.slice(dLastIdx)});
+
+    const deliveries=[];
+    dateSegments.forEach(ds=>{
+      const cityLines=extractCityLines(ds.segText);
+      cityLines.forEach(cl=>{
+        ensureLocation(cl.city);
+        const dateObj=dates.find(d=>d.val===ds.csvDate);
+        const locObj=locations.find(l=>l.city.toLowerCase()===cl.city.toLowerCase());
+        deliveries.push({id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:cl.city,count:cl.count,colors:cl.colors});
+      });
+    });
+
+    const totalCars=deliveries.reduce((s,d)=>s+d.count,0);
+    newCars.push({id:Date.now()+Math.random(),make,model,year,trim:'',sku:'',deliveries,collapsed:true});
+    msgs.push(`✓ ${make} ${model} ${year}: ${deliveries.length} deliveries, ${totalCars} cars`);
+  });
+
+  cars=[...cars,...newCars];
+  renderDates();renderLocations();renderCars();
+  autoSave();
+
+  const resEl=document.getElementById('bulk-parse-result');
+  resEl.innerHTML=`✓ Imported ${newCars.length} models<br><span style="opacity:0.7">${msgs.join('<br>')}</span>`;
+  resEl.className='parse-result ok';resEl.style.display='block';
+  showToast(`✓ Imported ${newCars.length} models`,'success');
+  // Switch to cars tab
+  setTimeout(()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.getElementById('tab-cars').classList.add('active');document.querySelectorAll('.tab')[1].classList.add('active');},500);
+}
+
+// ===== BULK PO PDF PARSER =====
+function bulkParsePO(){
+  const text=document.getElementById('bulk-import-text').value.trim();
+  if(!text){showToast('⚠ Paste text first','error');return;}
+
+  // Split by model: find lines with "Make Model Year" followed by price info
+  // Model blocks separated by model name lines
+  // Strategy: split on model name patterns (starts with capital, has year, followed by quantity)
+  const modelRe=/([A-Za-z][A-Za-z\s]+?\d{4}(?:\s+\S+)?)\s+[\d,]+\.?\d*\s+[\d,]+\.?\d+/gm;
+
+  const sections=[];
+  let lm,lHeader=null,lIdx=0;
+  modelRe.lastIndex=0;
+  while((lm=modelRe.exec(text))!==null){
+    if(lHeader!==null) sections.push({header:lHeader,body:text.slice(lIdx,lm.index)});
+    lHeader=lm[1].trim();
+    lIdx=lm.index;
+  }
+  // Also try simpler split: model name is a line before "Delivery Date:"
+  // Fallback: split on "Delivery Date:"
+  if(!sections.length){
+    const blocks=text.split(/(?=Delivery Date:)/i);
+    // find header from previous text
+    blocks.forEach((block,i)=>{
+      const header=i===0?'Unknown Model':sections[i-1]?.header||'Model '+i;
+      sections.push({header,body:block});
     });
   }
 
-  // Parse deliveries
-  const deliveryRegex=/(\d+)\s+cars?\s+in\s+([A-Za-z]+)\s+on\s+([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?/gi;
-  const newDeliveries=[];
-  const missingDates=[];
-  const missingCities=[];
-  let match;
-  while((match=deliveryRegex.exec(text))!==null){
-    const count=parseInt(match[1]);
-    const city=match[2];
-    const monthNum=MONTHS[match[3].toLowerCase()];
-    if(!monthNum) continue;
-    const day=parseInt(match[4]);
-    const year=new Date().getFullYear();
-    const csvDate=`${monthNum}/${day}/${year}`;
-    const dateCode=`${day}${match[3].substring(0,3)}`;
-    if(!dates.find(d=>d.val===csvDate)) missingDates.push({csvDate,dateCode});
-    if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) missingCities.push(city);
-    newDeliveries.push({count,city,csvDate,dateCode});
-  }
-  if(!newDeliveries.length){showToast('⚠ Could not parse — check PO format','error');return;}
+  const newCars=[];
+  // Better approach for PO PDF: find each model block by detecting "Make Model Year" then "Delivery Date: ..."
+  const allBlocks=[];
+  const modelLineRe=/^([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+)+\s+\d{4}(?:\s+\S+)?)\s*$/gm;
+  const deliveryRe=/Delivery Date:\s*(.+?)(?=Car Colors:|$)/si;
+  const colorsRe=/Car Colors:\s*(.+?)(?=\n\n|\d{2,3}\.00|$)/si;
 
-  // Auto-add dates & cities
-  missingDates.forEach(({csvDate,dateCode})=>{
-    if(!dates.find(d=>d.val===csvDate)) dates.push({id:Date.now()+Math.random(),val:csvDate,code:dateCode});
-  });
-  renderDates();
-  missingCities.forEach(city=>{
-    if(!locations.find(l=>l.city.toLowerCase()===city.toLowerCase())) locations.push({id:Date.now()+Math.random(),city,loc:''});
-  });
-  renderLocations();
+  // Split text into chunks per model
+  const modelPositions=[];
+  let mp;
+  const mpRe=/([A-Za-z][A-Za-z\s\-]+\d{4}(?:\s+[\w\-]+)?)/gm;
+  // Try a clean split: each model block starts with model name and has "Delivery Date:"
+  const cleanBlocks=text.split(/(?=[A-Z][a-z]+(?:\s+[A-Z][a-z]+)+\s+\d{4})/gm).filter(b=>b.includes('Delivery Date'));
 
-  // Distribute colors proportionally across deliveries
-  const totalCars=newDeliveries.reduce((s,d)=>s+d.count,0);
-  const colorEntries=Object.entries(colorsMap);
+  const msgs=[];
+  cleanBlocks.forEach(block=>{
+    const firstLine=block.split('\n')[0].trim();
+    const yearM=firstLine.match(/(\d{4})/);
+    const year=yearM?yearM[1]:'2026';
+    const nameNoYear=firstLine.replace(/\d{4}.*/,'').trim();
+    const parts=nameNoYear.split(/\s+/);
+    const make=parts[0]||'';
+    const model=parts.slice(1).join(' ')||'';
 
-  // For each color, spread count across deliveries by proportion
-  const colorAllocations=newDeliveries.map(()=>({}));
-  colorEntries.forEach(([name,totalCount])=>{
-    let remaining=totalCount;
-    newDeliveries.forEach((del,idx)=>{
-      const isLast=(idx===newDeliveries.length-1);
-      const allocated=isLast?remaining:Math.round((del.count/totalCars)*totalCount);
-      if(allocated>0) colorAllocations[idx][name]=(colorAllocations[idx][name]||0)+allocated;
-      remaining-=allocated;
-      if(remaining<0) remaining=0;
+    // Extract deliveries
+    const delMatch=block.match(/Delivery Date:\s*(.+?)(?=Car Colors:|[\d,]+\.00|$)/si);
+    const colMatch=block.match(/Car Colors:\s*(.+?)(?=[\d,]+\.00|$)/si);
+
+    if(!delMatch) return;
+
+    const delText=delMatch[1];
+    const colText=colMatch?colMatch[1]:'';
+
+    // Parse colors map
+    let colorsMap={};
+    if(colText){
+      colText.split(/,\s*/).forEach(part=>{
+        part=part.trim().replace(/\.+$/,'');
+        const cm=part.match(/^(\d+)\s+(.+)$/);
+        if(cm) colorsMap[cm[2].trim()]=parseInt(cm[1]);
+      });
+    }
+
+    // Parse deliveries: "X cars in City on Month Nth"
+    const delRe=/(\d+)\s+cars?\s+in\s+([A-Za-z]+)\s+on\s+([A-Za-z]+)\s+(\d+)(?:st|nd|rd|th)?/gi;
+    const delEntries=[];
+    let dm2;
+    while((dm2=delRe.exec(delText))!==null){
+      const count=parseInt(dm2[1]);
+      const city=dm2[2];
+      const day=parseInt(dm2[4]);
+      const parsed=parseDate(day,dm2[3]);
+      if(!parsed) continue;
+      ensureDate(parsed.csvDate,parsed.dateCode);
+      ensureLocation(city);
+      delEntries.push({count,city,csvDate:parsed.csvDate,dateCode:parsed.dateCode});
+    }
+
+    // Distribute colors proportionally
+    const totalCars=delEntries.reduce((s,d)=>s+d.count,0);
+    const colorEntries=Object.entries(colorsMap);
+    const colorAllocations=delEntries.map(()=>({}));
+    colorEntries.forEach(([name,totalCount])=>{
+      let remaining=totalCount;
+      delEntries.forEach((del,idx)=>{
+        const isLast=idx===delEntries.length-1;
+        const allocated=isLast?remaining:Math.round((del.count/totalCars)*totalCount);
+        if(allocated>0) colorAllocations[idx][name]=(colorAllocations[idx][name]||0)+allocated;
+        remaining=Math.max(0,remaining-allocated);
+      });
     });
+
+    const deliveries=delEntries.map((del,idx)=>{
+      const dateObj=dates.find(d=>d.val===del.csvDate);
+      const locObj=locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
+      const colors=Object.entries(colorAllocations[idx]).filter(([,c])=>c>0).map(([name,count])=>({id:Date.now()+Math.random(),name,count}));
+      return{id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors};
+    });
+
+    if(deliveries.length){
+      newCars.push({id:Date.now()+Math.random(),make,model,year,trim:'',sku:'',deliveries,collapsed:true});
+      msgs.push(`✓ ${make} ${model} ${year}: ${deliveries.length} deliveries, ${totalCars} cars`);
+    }
   });
 
-  car.deliveries=newDeliveries.map((del,idx)=>{
-    const dateObj=dates.find(d=>d.val===del.csvDate);
-    const locObj=locations.find(l=>l.city.toLowerCase()===del.city.toLowerCase());
-    const deliveryColors=Object.entries(colorAllocations[idx])
-      .filter(([,c])=>c>0)
-      .map(([name,count])=>({id:Date.now()+Math.random(),name,count}));
-    return {id:Date.now()+Math.random(),dateId:dateObj?dateObj.id:null,city:locObj?locObj.city:del.city,count:del.count,colors:deliveryColors};
-  });
+  if(!newCars.length){showToast('⚠ Could not parse — check PO PDF format','error');return;}
 
-  const msgs=[`✓ ${newDeliveries.length} deliveries, ${totalCars} cars`];
-  if(colorEntries.length) msgs.push(`✓ ${colorEntries.length} colors distributed proportionally`);
-  if(missingDates.length) msgs.push(`⚠ Added ${missingDates.length} date(s)`);
-  if(missingCities.length) msgs.push(`⚠ Added cities: ${[...new Set(missingCities)].join(', ')}`);
-  car.parseMsg={text:msgs.join(' | '),type:missingDates.length||missingCities.length?'warn':'ok'};
-  car.collapsed=false;
-  renderCars();autoSave();
-  showToast(`✓ Parsed ${newDeliveries.length} deliveries`,'success');
+  cars=[...cars,...newCars];
+  renderDates();renderLocations();renderCars();autoSave();
+
+  const resEl=document.getElementById('bulk-parse-result');
+  resEl.innerHTML=`✓ Imported ${newCars.length} models<br><span style="opacity:0.7">${msgs.join('<br>')}</span>`;
+  resEl.className='parse-result ok';resEl.style.display='block';
+  showToast(`✓ Imported ${newCars.length} models`,'success');
+  setTimeout(()=>{document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));document.getElementById('tab-cars').classList.add('active');document.querySelectorAll('.tab')[1].classList.add('active');},500);
 }
 
 // ===== GENERATE =====
 function updateStats(){
   let totalDel=0,totalCars=0;
-  for(const c of cars){totalDel+=c.deliveries.length;for(const d of c.deliveries) totalCars+=d.count;}
+  for(const c of cars){totalDel+=c.deliveries.length;for(const d of c.deliveries)totalCars+=d.count;}
   document.getElementById('s-models').textContent=cars.length;
   document.getElementById('s-deliveries').textContent=totalDel;
   document.getElementById('s-cars').textContent=totalCars;
@@ -723,35 +776,31 @@ function generateCSV(){
       const location=locInfo?locInfo.loc:del.city;
       let colorList=[];
       if(del.colors.length){
-        for(const c of del.colors) for(let i=0;i<c.count;i++) colorList.push(c.name||'Unknown');
-        while(colorList.length<del.count) colorList.push('Unknown');
+        for(const c of del.colors)for(let i=0;i<c.count;i++)colorList.push(c.name||'Unknown');
+        while(colorList.length<del.count)colorList.push('Unknown');
         colorList=colorList.slice(0,del.count);
-      } else {
-        for(let i=0;i<del.count;i++) colorList.push('Unknown');
-      }
+      }else{for(let i=0;i<del.count;i++)colorList.push('Unknown');}
       for(let i=0;i<del.count;i++){
         globalCounter++;
         const n2=String(globalCounter).padStart(2,'0');
         const n3=String(globalCounter).padStart(3,'0');
-        const vin=`PO${poNum}-${dateInfo.code}-${code}-${n2}`;
-        const reg=`${dateInfo.code}-${code}-${poNum}-${n3}`;
-        rows.push(`${vin},${reg},${car.sku},${status},${car.make},${car.model},${car.year},${colorList[i]},${car.trim},${mileage},${location},${condition},${type},${dateInfo.val},,,,${poNum},`);
+        rows.push(`PO${poNum}-${dateInfo.code}-${code}-${n2},${dateInfo.code}-${code}-${poNum}-${n3},${car.sku},${status},${car.make},${car.model},${car.year},${colorList[i]},${car.trim},${mileage},${location},${condition},${type},${dateInfo.val},,,,${poNum},`);
       }
     }
   }
   generatedCSV=rows.join('\n');
-  const preview=rows.slice(0,8).join('\n')+(rows.length>8?`\n\n... and ${rows.length-8} more rows`:'');
   const ob=document.getElementById('output-box');
-  ob.textContent=preview;ob.style.display='block';
+  ob.textContent=rows.slice(0,8).join('\n')+(rows.length>8?`\n\n... and ${rows.length-8} more rows`:'');
+  ob.style.display='block';
   document.getElementById('export-card').style.display='block';
   document.getElementById('s-rows').textContent=rows.length-1;
   showToast(`✓ Generated ${rows.length-1} rows`,'success');
-  saveCurrentPO(true);
+  savePO(true);
 }
 function copyCSV(){
   if(!generatedCSV){showToast('⚠ Click Generate first','error');return;}
-  const fallback=()=>{const ta=document.createElement('textarea');ta.value=generatedCSV;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✓ Copied! Paste in Google Sheets or Notepad','success');};
-  navigator.clipboard?navigator.clipboard.writeText(generatedCSV).then(()=>showToast('✓ Copied!','success')).catch(fallback):fallback();
+  const fb=()=>{const ta=document.createElement('textarea');ta.value=generatedCSV;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);showToast('✓ Copied!','success');};
+  navigator.clipboard?navigator.clipboard.writeText(generatedCSV).then(()=>showToast('✓ Copied!','success')).catch(fb):fb();
 }
 function copyHeaders(){
   const h='Vin Number,Registration Number,SKU,Status Type,Make (Brand),Model,Model Year,Color,Trim,Mileage,Location,Condition,Type,Available From,Role,Day Advance,Period Type,PO number,Available Buffer Days';
@@ -759,6 +808,7 @@ function copyHeaders(){
 }
 
 // ===== INIT =====
+loadColorOptions();
 updateColorsDatalist();
 renderDates();renderLocations();renderCars();
 </script>
